@@ -24,12 +24,12 @@ AidelModel<key_t, val_t>::~AidelModel()
 }
 
 template<class key_t, class val_t>
-AidelModel<key_t, val_t>::AidelModel(lrmodel_type &lrmodel, 
+AidelModel<key_t, val_t>::AidelModel(plexmodel_type &plexmodel, 
                                      const typename std::vector<key_t>::const_iterator &keys_begin, 
                                      const typename std::vector<val_t>::const_iterator &vals_begin, 
                                      size_t size, size_t _maxErr) : maxErr(_maxErr), capacity(size)
 {
-    model=new lrmodel_type(lrmodel.get_weight0(), lrmodel.get_weight1());
+    model=new plexmodel_type();
     keys = (key_t *)malloc(sizeof(key_t)*size);
     vals = (val_t *)malloc(sizeof(val_t)*size);
     valid_flag = (bool*)malloc(sizeof(bool)*size);

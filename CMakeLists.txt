@@ -10,5 +10,7 @@ set(CMAKE_CXX_FLAGS "-g -msse -march=core-avx2")
 
 
 file(GLOB finedex_benchmark_SORUCES ""  "finedex_benchmark.cpp" )
-add_executable(finedex_benchmark ${finedex_benchmark_SORUCES} )
+file(GLOB PLEX_INCLUDE_H "include/ts/*.h")
+file(GLOB PLEX_INCLUDE_H "include/rs/*.h")
+add_executable(finedex_benchmark ${finedex_benchmark_SORUCES} ${PLEX_INCLUDE_H})
 target_link_libraries(finedex_benchmark pthread)

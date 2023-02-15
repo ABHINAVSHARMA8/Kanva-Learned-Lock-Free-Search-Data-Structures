@@ -1,8 +1,8 @@
 #ifndef __AIDEL_MODEL_H__
 #define __AIDEL_MODEL_H__
 
-#include "lr_model.h"
-#include "lr_model_impl.h"
+#include "plex_model.h"
+#include "plex_model_impl.h"
 #include "level_bin_con.h"
 #include "util.h"
 
@@ -11,7 +11,7 @@ namespace aidel{
 template<class key_t, class val_t>
 class AidelModel {
 public:
-    typedef LinearRegressionModel<key_t> lrmodel_type;
+    typedef PlexModel<key_t> plexmodel_type;
     typedef aidel::LevelBinCon<key_t, val_t> levelbin_type;
     typedef aidel::AidelModel<key_t, val_t> aidelmodel_type;
 
@@ -38,7 +38,7 @@ public:
 public:
     inline AidelModel();
     ~AidelModel();
-    AidelModel(lrmodel_type &lrmodel, const typename std::vector<key_t>::const_iterator &keys_begin,
+    AidelModel(plexmodel_type &plexmodel, const typename std::vector<key_t>::const_iterator &keys_begin,
                const typename std::vector<val_t>::const_iterator &vals_begin, 
                size_t size, size_t _maxErr);
     inline size_t get_capacity();

@@ -2,8 +2,8 @@
 #define __AIDEL_H__
 
 #include "util.h"
-#include "lr_model.h"
-#include "lr_model_impl.h"
+#include "plex_model.h"
+#include "plex_model_impl.h"
 #include "aidel_model.h"
 #include "aidel_model_impl.h"
 #include "piecewise_linear_model.h"
@@ -14,7 +14,7 @@ template<class key_t, class val_t>
 class AIDEL{
 public:
     typedef aidel::AidelModel<key_t, val_t> aidelmodel_type;
-    typedef LinearRegressionModel<key_t> lrmodel_type;
+    typedef PlexModel<key_t> plexmodel_type;
     typedef typename OptimalPiecewiseLinearModel<key_t, size_t>::CanonicalSegment canonical_segment;
     //typedef aidel::LevelIndex<key_t> root_type;
 

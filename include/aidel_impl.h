@@ -41,8 +41,8 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
     size_t end = learning_step<keys.size()?learning_step:keys.size();
     while(start<end){
         //COUT_THIS("start:" << start<<" ,end: "<<end);
-        lrmodel_type model;
-        model.train(keys.begin()+start, end-start);
+        plexmodel_type model;
+        model.train(keys.begin()+start, end-start,maxErr);
         size_t err = model.get_maxErr();
         // equal
         if(err == maxErr) {
@@ -103,7 +103,7 @@ size_t AIDEL<key_t, val_t>::backward_train(const typename std::vector<key_t>::co
 }
 
 template<class key_t, class val_t>
-void AIDEL<key_t, val_t>::append_model(lrmodel_type &model, 
+void AIDEL<key_t, val_t>::append_model(plexmodel_type &model, 
                                        const typename std::vector<key_t>::const_iterator &keys_begin, 
                                        const typename std::vector<val_t>::const_iterator &vals_begin, 
                                        size_t size, int err)
