@@ -4,7 +4,7 @@
 
 
 template<class key_t>
-inline PlexModel<key_t>::LinearRegressionModel(){}
+inline PlexModel<key_t>::PlexModel(){}
 
 
 
@@ -15,7 +15,7 @@ PlexModel<key_t>::~PlexModel(){}
 template<class key_t>
 void PlexModel<key_t>::train(const typename std::vector<key_t>::const_iterator &it, size_t size,size_t maxErr)
 {   
-    this.maxErr=maxErr;
+    this->maxErr=maxErr;
     std::vector<key_t> trainkeys(size);
     std::vector<size_t> positions(size);
     for(size_t i=0; i<size; i++){
@@ -27,7 +27,7 @@ void PlexModel<key_t>::train(const typename std::vector<key_t>::const_iterator &
 
 
 template<class key_t>
-void LinearRegressionModel<key_t>::train(const std::vector<key_t> &keys,
+void PlexModel<key_t>::train(const std::vector<key_t> &keys,
                                          const std::vector<size_t> &positions)
 {
     std::sort(keys.begin(), keys.end());
@@ -36,7 +36,7 @@ void LinearRegressionModel<key_t>::train(const std::vector<key_t> &keys,
     // Build TS
     uint64_t min = keys.front();
     uint64_t max = keys.back();
-    ts::Builder<uint64_t> tsb(min, max, /*spline_max_error=*/32);
+    ts::Builder<uint64_t> tsb(min, max, /*spline_max_error=*/maxErr);
 
     for (const auto& key : keys) tsb.AddKey(key);
     auto ts = tsb.Finalize()
@@ -49,7 +49,7 @@ void PlexModel<key_t>::print_weights() const {
 
 // ============ prediction ==============
 template <class key_t>
-size_t PlexnModel<key_t>::predict(const key_t &key) const{
+size_t PlexModel<key_t>::predict(const key_t &key) const{
     // Search using TS
     ts::SearchBound bound = ts.GetSearchBound(key);
     auto start = std::begin(keys) + bound.begin,
@@ -73,17 +73,17 @@ std::vector<size_t> PlexModel<key_t>::predict(const std::vector<key_t> &keys) co
 
 // =========== max__error ===========
 template <class key_t>
-size_t LinearRegressionModel<key_t>::max_error(
+size_t PlexModel<key_t>::max_error(
     const typename std::vector<key_t>::const_iterator &keys_begin,
     uint32_t size) {
-    return maxErr;
+    return this->maxErr;
 }
 
 template <class key_t>
-size_t LinearRegressionModel<key_t>::max_error(const std::vector<key_t> &keys,
+size_t PlexModel<key_t>::max_error(const std::vector<key_t> &keys,
                                                const std::vector<size_t> &positions)
 {
-   return maxErr;
+   return this->maxErr;
 }
 
 

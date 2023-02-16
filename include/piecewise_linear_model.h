@@ -329,8 +329,8 @@ auto make_segmentation(RandomIt first, RandomIt last, size_t epsilon) {
 }
 
 
-template<typename Fin, typename Fout, typename lrmodel_type>
-size_t make_segmentation_data(size_t n, size_t epsilon, Fin in, Fout out, lrmodel_type* lrmodel) {
+template<typename Fin, typename Fout, typename plexmodel_type>
+size_t make_segmentation_data(size_t n, size_t epsilon, Fin in, Fout out, plexmodel_type* plexmodel) {
     if (n == 0)
         return 0;
 
@@ -357,7 +357,7 @@ size_t make_segmentation_data(size_t n, size_t epsilon, Fin in, Fout out, lrmode
         else {
             canonical_segment cs = opt.get_segment();
             auto[cs_slope, cs_intercept] = cs.get_floating_point_segment(cs.get_first_x());
-            lrmodel_type model(cs_slope, cs_intercept);
+            plexrmodel_type model();
             out(model, keys.begin(), keys.begin(), keys.size(), epsilon);
             // alwayse start from 0 for each segment
             std::vector<X>().swap(keys);
@@ -378,7 +378,7 @@ size_t make_segmentation_data(size_t n, size_t epsilon, Fin in, Fout out, lrmode
     //out(start, n, opt.get_segment());
     canonical_segment cs = opt.get_segment();
     auto[cs_slope, cs_intercept] = cs.get_floating_point_segment(cs.get_first_x());
-    lrmodel_type model(cs_slope, cs_intercept);
+    plexrmodel_type model();
     out(model, keys.begin(), keys.begin(), keys.size(), epsilon);
     return ++c;
 }

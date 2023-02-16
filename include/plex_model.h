@@ -1,7 +1,7 @@
 
 
-#include "include/plex/ts/builder.h"
-#include "include/plex/ts/common.h"
+#include "plex/ts/builder.h"
+#include "plex/ts/common.h"
 #include <array>
 #include <vector>
 #include "util.h"
@@ -13,7 +13,6 @@ class PlexModel{
 
 public:
     inline PlexModel();
-    inline PlexModel(double w, double b);
     ~PlexModel();
     void train(const typename std::vector<key_t>::const_iterator &it, size_t size,size_t maxErr);
     void train(const std::vector<key_t> &keys,
@@ -30,7 +29,6 @@ public:
 
 private:
     size_t maxErr = 0;
-    auto ts;
     std::vector<key_t> &keys;
     
 };

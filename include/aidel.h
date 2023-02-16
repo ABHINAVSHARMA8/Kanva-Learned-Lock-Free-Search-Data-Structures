@@ -16,7 +16,7 @@ public:
     typedef aidel::AidelModel<key_t, val_t> aidelmodel_type;
     typedef PlexModel<key_t> plexmodel_type;
     typedef typename OptimalPiecewiseLinearModel<key_t, size_t>::CanonicalSegment canonical_segment;
-    //typedef aidel::LevelIndex<key_t> root_type;
+    typedef aidel::LevelIndex<key_t> root_type;
 
 public:
     inline AIDEL();
@@ -41,7 +41,7 @@ private:
     size_t backward_train(const typename std::vector<key_t>::const_iterator &keys_begin,
                           const typename std::vector<val_t>::const_iterator &vals_begin, 
                           uint32_t size, int step);
-    void append_model(lrmodel_type &model, const typename std::vector<key_t>::const_iterator &keys_begin, 
+    void append_model(plexmodel_type &model, const typename std::vector<key_t>::const_iterator &keys_begin, 
                       const typename std::vector<val_t>::const_iterator &vals_begin, 
                       size_t size, int err);
     aidelmodel_type* find_model(const key_t &key);
@@ -51,7 +51,7 @@ private:
 private:
     std::vector<key_t> model_keys;
     std::vector<aidelmodel_type> aimodels;
-    //root_type* root = nullptr;
+    root_type* root = nullptr;
     std::vector<canonical_segment> segments;
 
     int maxErr = 64;

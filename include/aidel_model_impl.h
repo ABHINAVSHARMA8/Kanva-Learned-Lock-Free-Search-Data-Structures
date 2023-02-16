@@ -453,7 +453,7 @@ result_t AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const v
             std::vector<key_t> retrain_keys;
             std::vector<val_t> retrain_vals;
             mob->mob.lb->resort(retrain_keys, retrain_vals);
-            lrmodel_type model;
+            plexmodel_type model;
             model.train(retrain_keys.begin(), retrain_keys.size());
             size_t err = model.get_maxErr();
             aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), err);

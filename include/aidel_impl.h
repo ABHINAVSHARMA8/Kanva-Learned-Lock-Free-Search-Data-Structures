@@ -89,7 +89,7 @@ size_t AIDEL<key_t, val_t>::backward_train(const typename std::vector<key_t>::co
     size_t start = 0;
     size_t end = size-step;
     while(end>0){
-        lrmodel_type model;
+        plexmodel_type model;
         model.train(keys_begin, end);
         size_t err = model.get_maxErr();
         if(err<=maxErr){

@@ -71,7 +71,7 @@ private:
 
 
 private:
-    lrmodel_type* model = nullptr;
+    plexmodel_type* model = nullptr;
     size_t maxErr = 64;
     size_t err = 0;
     key_t* keys = nullptr;
