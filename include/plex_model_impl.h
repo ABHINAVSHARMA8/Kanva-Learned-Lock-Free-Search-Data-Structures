@@ -12,7 +12,7 @@
 
 
 template<class key_t>
-inline LinearRegressionModel<key_t>::LinearRegressionModel(){}
+inline PlexModel<key_t>::LinearRegressionModel(){}
 
 
 
