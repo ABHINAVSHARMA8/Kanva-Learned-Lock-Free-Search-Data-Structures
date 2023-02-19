@@ -46,7 +46,7 @@ void PlexModel<key_t>::train(const std::vector<key_t> &keys,const std::vector<si
     std::sort(model_keys.begin(),model_keys.end());
     
     vec=model_keys;
-    std::cout<<"Length of vec in training is "<<vec.size()<<std::endl;
+    //std::cout<<"Length of vec in training is "<<vec.size()<<std::endl;
     
 
     // Build TS
@@ -67,7 +67,7 @@ void PlexModel<key_t>::print_weights() const {
 template <class key_t>
 size_t PlexModel<key_t>::predict(const key_t &key) const{
     // Search using TS
-    std::cout<<"Length of vec is "<<vec.size()<<std::endl;
+   // std::cout<<"Length of vec is "<<vec.size()<<std::endl;
     if(this->vec.size()==0) return 0;
     double model_key = key;
     
