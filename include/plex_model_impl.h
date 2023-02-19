@@ -10,7 +10,8 @@ template<class key_t>
 inline PlexModel<key_t>::PlexModel(){} 
 
 
-
+template<class key_t>
+PlexModel<key_t>::~PlexModel(){}
 
 
 
