@@ -31,16 +31,20 @@ void PlexModel<key_t>::train(const typename std::vector<key_t>::const_iterator &
 
 template<class key_t>
 void PlexModel<key_t>::train(const std::vector<key_t> &keys,const std::vector<size_t> &positions)
-{
-    std::sort(keys.begin(), keys.end());
-    this->vec=keys;
+{   
+    std::vector<double> model_keys(keys.size());
+    for (size_t i = 0; i < keys.size(); i++) {
+        model_keys[i] = keys[i];
+    }
+    std::sort(model_keys.begin(),model_keys.end());
+    this->vec=model_keys;
 
     // Build TS
-    uint64_t min = keys.front();
-    uint64_t max = keys.back();
+    uint64_t min = model_keys.front();
+    uint64_t max = model_keys.back();
     ts::Builder<uint64_t> tsb(min, max, /*spline_max_error=*/this->maxErr);
 
-    for (const auto& key : keys) tsb.AddKey(key);
+    for (const auto& key : model_keys) tsb.AddKey(key);
     this->ts = tsb.Finalize();
 }
 
