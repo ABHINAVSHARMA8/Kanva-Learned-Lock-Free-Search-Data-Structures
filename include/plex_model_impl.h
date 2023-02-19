@@ -10,7 +10,7 @@
 //inline PlexModel<key_t>::PlexModel(){} CHANGE
 
 
-auto ts;
+auto ts=nullptr;
 template<class key_t>
 PlexModel<key_t>::~PlexModel(){}
 
