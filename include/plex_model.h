@@ -29,7 +29,7 @@ public:
                      const std::vector<size_t> &positions);
     
     inline size_t get_maxErr() { return maxErr; }
-    inline std::vector<double> get_vec(){ return &vec; }
+    inline std::vector<double>& get_vec(){ return vec; }
     inline ts::TrieSpline<key_t> get_ts(){ return ts; }
     void print_weights() const;
 
