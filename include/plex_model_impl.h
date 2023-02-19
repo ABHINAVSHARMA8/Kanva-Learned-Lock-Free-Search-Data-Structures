@@ -37,7 +37,7 @@ void PlexModel<key_t>::train(const std::vector<key_t> &keys,const std::vector<si
         model_keys[i] = keys[i];
     }
     std::sort(model_keys.begin(),model_keys.end());
-    this->vec=&keys;
+    this->vec=&model_keys;
     
 
     // Build TS
