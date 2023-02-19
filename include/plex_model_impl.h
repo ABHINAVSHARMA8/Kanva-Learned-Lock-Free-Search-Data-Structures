@@ -37,7 +37,7 @@ void PlexModel<key_t>::train(const std::vector<key_t> &keys,const std::vector<si
         model_keys[i] = keys[i];
     }
     std::sort(model_keys.begin(),model_keys.end());
-    this->vec=&model_keys;
+    this->vec=keys;
     
 
     // Build TS
@@ -45,7 +45,7 @@ void PlexModel<key_t>::train(const std::vector<key_t> &keys,const std::vector<si
     uint64_t max = model_keys.back();
     ts::Builder<uint64_t> tsb(min, max, /*spline_max_error=*/this->maxErr);
 
-    for (const auto& key : model_keys) tsb.AddKey(key);
+    for (const auto& key : keys) tsb.AddKey(key);
     this->ts = tsb.Finalize();
 }
 
