@@ -6,13 +6,11 @@
 #include "util.h"
 
 
-//template<class key_t>
-//inline PlexModel<key_t>::PlexModel(){} CHANGE
-
-
-
 template<class key_t>
-inline PlexModel<key_t>::LinearRegressionModel(){}
+inline PlexModel<key_t>::PlexModel(){} 
+
+
+
 
 
 
