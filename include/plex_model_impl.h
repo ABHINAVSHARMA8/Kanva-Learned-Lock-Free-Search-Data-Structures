@@ -6,8 +6,8 @@
 #include "util.h"
 
 
-template<class key_t>
-inline PlexModel<key_t>::PlexModel(){}
+//template<class key_t>
+//inline PlexModel<key_t>::PlexModel(){} CHANGE
 
 
 
@@ -42,7 +42,7 @@ void PlexModel<key_t>::train(const std::vector<key_t> &keys,
     ts::Builder<uint64_t> tsb(min, max, /*spline_max_error=*/maxErr);
 
     for (const auto& key : keys) tsb.AddKey(key);
-    this.ts = tsb.Finalize();
+    this->ts = tsb.Finalize();
 }
 
 template<class key_t>
@@ -54,7 +54,7 @@ void PlexModel<key_t>::print_weights() const {
 template <class key_t>
 size_t PlexModel<key_t>::predict(const key_t &key) const{
     // Search using TS
-    ts::SearchBound bound = this.ts.GetSearchBound(key);
+    ts::SearchBound bound = this->ts.GetSearchBound(key);
     auto start = std::begin(keys) + bound.begin,
         last = std::begin(keys) + bound.end;
     auto pos = std::lower_bound(start, last,key) - begin(keys);

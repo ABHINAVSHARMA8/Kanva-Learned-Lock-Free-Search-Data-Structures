@@ -51,7 +51,7 @@ private:
 private:
     std::vector<key_t> model_keys;
     std::vector<aidelmodel_type> aimodels;
-    root_type* root = nullptr;
+    //root_type* root = nullptr;
     std::vector<canonical_segment> segments;
 
     int maxErr = 64;
