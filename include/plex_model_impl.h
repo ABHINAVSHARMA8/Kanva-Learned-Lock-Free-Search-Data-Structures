@@ -38,6 +38,7 @@ void PlexModel<key_t>::train(const std::vector<key_t> &keys,const std::vector<si
     }
     std::sort(model_keys.begin(),model_keys.end());
     this->vec=keys;
+    std::cout<<"Length of vec is "<<this->vec.size()<<std::endl;
 
     // Build TS
     uint64_t min = model_keys.front();
