@@ -44,7 +44,13 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
         plexmodel_type model;
         model.train(keys.begin()+start, end-start);
         size_t err = model.get_maxErr();
+        append_model(model,keys.begin()+start, vals.begin()+start, end-start, err);
+        start = end;
+        end += learning_step;
+        if(end>=keys.size())
+            end = keys.size();
         // equal
+        /*
         if(err == maxErr) {
             append_model(model, keys.begin()+start, vals.begin()+start, end-start, err);
         } else if(err < maxErr) {
@@ -65,7 +71,7 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
         end += learning_step;
         if(end>=keys.size()){
             end = keys.size();
-        }
+        }*/
     }
 
     //root = new root_type(model_keys);
