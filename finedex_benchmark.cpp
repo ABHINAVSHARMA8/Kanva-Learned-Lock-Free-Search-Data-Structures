@@ -163,4 +163,3 @@ void *run_fg(void *param) {
     }
     pthread_exit(nullptr);
 }
-

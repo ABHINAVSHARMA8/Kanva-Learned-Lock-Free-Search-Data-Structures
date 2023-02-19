@@ -42,7 +42,7 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
     while(start<end){
         //COUT_THIS("start:" << start<<" ,end: "<<end);
         plexmodel_type model;
-        model.train(keys.begin()+start, end-start,maxErr);
+        model.train(keys.begin()+start, end-start);
         size_t err = model.get_maxErr();
         // equal
         if(err == maxErr) {
@@ -90,7 +90,7 @@ size_t AIDEL<key_t, val_t>::backward_train(const typename std::vector<key_t>::co
     size_t end = size-step;
     while(end>0){
         plexmodel_type model;
-        model.train(keys_begin, end,32);
+        model.train(keys_begin, end);
         size_t err = model.get_maxErr();
         if(err<=maxErr){
             append_model(model, keys_begin, vals_begin, end, err);
