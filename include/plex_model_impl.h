@@ -33,7 +33,7 @@ template<class key_t>
 void PlexModel<key_t>::train(const std::vector<key_t> &keys,const std::vector<size_t> &positions)
 {
     std::sort(keys.begin(), keys.end());
-    this->keys=keys;
+    this->vec=keys;
 
     // Build TS
     uint64_t min = keys.front();
@@ -54,10 +54,10 @@ template <class key_t>
 size_t PlexModel<key_t>::predict(const key_t &key) const{
     // Search using TS
     ts::SearchBound bound = this->ts.GetSearchBound(key);
-    auto start = std::begin(this->keys) + bound.begin,
-        last = std::begin(this->keys) + bound.end;
-    auto pos = std::lower_bound(start, last,key) - begin(this->keys);
-    assert(this->keys[pos] == key);
+    auto start = std::begin(this->vec) + bound.begin,
+        last = std::begin(this->vec) + bound.end;
+    auto pos = std::lower_bound(start, last,key) - begin(this->vec);
+    assert(this->vec[pos] == key);
     return pos;
 }
 
