@@ -1,3 +1,0 @@
-/mnt/c/Users/Jahanvi/Desktop/FINERdex/build/CMakeFiles/rebuild_cache.dir
-/mnt/c/Users/Jahanvi/Desktop/FINERdex/build/CMakeFiles/edit_cache.dir
-/mnt/c/Users/Jahanvi/Desktop/FINERdex/build/CMakeFiles/finedex_benchmark.dir
