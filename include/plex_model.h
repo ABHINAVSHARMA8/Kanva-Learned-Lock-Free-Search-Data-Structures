@@ -1,3 +1,5 @@
+#ifndef __PLEX_MODEL_H__
+#define __PLEX_MODEL_H__
 
 
 #include "plex/ts/builder.h"
@@ -34,5 +36,6 @@ private:
     
 };
 
+#endif
 
 

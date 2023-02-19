@@ -16,7 +16,7 @@ public:
     typedef aidel::AidelModel<key_t, val_t> aidelmodel_type;
     typedef PlexModel<key_t> plexmodel_type;
     typedef typename OptimalPiecewiseLinearModel<key_t, size_t>::CanonicalSegment canonical_segment;
-    typedef aidel::LevelIndex<key_t> root_type;
+   // typedef aidel::LevelIndex<key_t> root_type;
 
 public:
     inline AIDEL();

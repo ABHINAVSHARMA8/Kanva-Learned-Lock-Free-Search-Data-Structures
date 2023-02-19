@@ -1,3 +1,6 @@
+#ifndef __PLEX_MODEL_IMPL_H__
+#define __PLEX_MODEL_IMPL_H__
+
 
 #include "plex_model.h"
 #include "util.h"
@@ -87,4 +90,4 @@ size_t PlexModel<key_t>::max_error(const std::vector<key_t> &keys,
 }
 
 
-
+#endif
