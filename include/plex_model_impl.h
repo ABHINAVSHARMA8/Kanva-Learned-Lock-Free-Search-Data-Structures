@@ -58,6 +58,7 @@ void PlexModel<key_t>::print_weights() const {
 template <class key_t>
 size_t PlexModel<key_t>::predict(const key_t &key) const{
     // Search using TS
+    if(this->vec.size()==0) return 0;
     std::cout<<"Length of vec is "<<this->vec.size()<<std::endl;
     ts::SearchBound bound = this->ts.GetSearchBound(key);
     auto start = std::begin(this->vec) + bound.begin;
