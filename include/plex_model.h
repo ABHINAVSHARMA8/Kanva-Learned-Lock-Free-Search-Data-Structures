@@ -18,8 +18,7 @@ public:
     inline PlexModel();
     ~PlexModel();
     void train(const typename std::vector<key_t>::const_iterator &it, size_t size);
-    void train(const std::vector<key_t> &keys,
-               const std::vector<size_t> &positions);
+    void train(const std::vector<key_t> &keys,const std::vector<size_t> &positions);
     
     size_t predict(const key_t &key) const;
     std::vector<size_t> predict(const std::vector<key_t> &keys) const;

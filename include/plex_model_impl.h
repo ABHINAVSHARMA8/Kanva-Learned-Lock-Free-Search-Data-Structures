@@ -16,7 +16,7 @@ PlexModel<key_t>::~PlexModel(){}
 
 
 template<class key_t>
-void PlexModel<key_t>::train(const typename std::vector<key_t>::const_iterator &it, size_t size,)
+void PlexModel<key_t>::train(const typename std::vector<key_t>::const_iterator &it, size_t size)
 {   
     
     std::vector<key_t> trainkeys(size);
