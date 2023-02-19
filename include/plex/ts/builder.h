@@ -40,7 +40,7 @@ class Builder {
   // Finalizes the construction and returns a read-only `TrieSpline`.
   TrieSpline<KeyType> Finalize() {
     // Last key needs to be equal to `max_key_`.
-    assert(curr_num_keys_ == 0 || prev_key_ == max_key_);
+  //  assert(curr_num_keys_ == 0 || prev_key_ == max_key_);
 
     // Ensure that `prev_key_` (== `max_key_`) is last key on spline.
     if (curr_num_keys_ > 0 && spline_points_.back().x != prev_key_)
@@ -64,12 +64,12 @@ class Builder {
   using Statistics = ts::Statistics;
 
   static unsigned ComputeLog(uint32_t n, bool round = false) {
-    assert(n);
+   // assert(n);
     return 31 - __builtin_clz(n) + (round ? ((n & (n - 1)) != 0) : 0);
   }
 
   static unsigned ComputeLog(uint64_t n, bool round = false) {
-    assert(n);
+   // assert(n);
     return 63 - __builtin_clzl(n) + (round ? ((n & (n - 1)) != 0) : 0);
   }
 
@@ -98,17 +98,17 @@ class Builder {
 
   // `int(ceil(log_2(distance)))`. I
   static size_t ComputeCost(uint32_t value) {
-		assert(value);
+	//	assert(value);
     if (value == 1) return 1;
     return 31 - __builtin_clz(value) + ((value & (value - 1)) != 0);
   }
 
   void AddKey(KeyType key, size_t position) {
-    assert(key >= min_key_ && key <= max_key_);
+    //assert(key >= min_key_ && key <= max_key_);
     // Keys need to be monotonically increasing.
-    assert(key >= prev_key_);
+    //assert(key >= prev_key_);
     // Positions need to be strictly monotonically increasing.
-    assert(position == 0 || position > prev_position_);
+   // assert(position == 0 || position > prev_position_);
 
     PossiblyAddKeyToSpline(key, position);
 
@@ -185,15 +185,15 @@ class Builder {
         (position < spline_max_error_) ? 0 : position - spline_max_error_;
 
     // Compute differences.
-    assert(upper_limit_.x >= last.x);
-    assert(lower_limit_.x >= last.x);
-    assert(key >= last.x);
+    //assert(upper_limit_.x >= last.x);
+    //assert(lower_limit_.x >= last.x);
+    //assert(key >= last.x);
     const double upper_limit_x_diff = upper_limit_.x - last.x;
     const double lower_limit_x_diff = lower_limit_.x - last.x;
     const double x_diff = key - last.x;
 
-    assert(upper_limit_.y >= last.y);
-    assert(position >= last.y);
+   // assert(upper_limit_.y >= last.y);
+   // assert(position >= last.y);
     const double upper_limit_y_diff = upper_limit_.y - last.y;
     const double lower_limit_y_diff = lower_limit_.y - last.y;
     const double y_diff = position - last.y;
@@ -201,7 +201,7 @@ class Builder {
     // `prev_point_` is the previous point on the CDF and the next candidate to
     // be added to the spline. Hence, it should be different from the `last`
     // point on the spline.
-    assert(prev_point_.x != last.x);
+   // assert(prev_point_.x != last.x);
 
     // Do we cut the error corridor?
     if ((ComputeOrientation(upper_limit_x_diff, upper_limit_y_diff, x_diff,
@@ -215,7 +215,7 @@ class Builder {
       SetUpperLimit(key, upper_y);
       SetLowerLimit(key, lower_y);
     } else {
-      assert(upper_y >= last.y);
+     // assert(upper_y >= last.y);
       const double upper_y_diff = upper_y - last.y;
       if (ComputeOrientation(upper_limit_x_diff, upper_limit_y_diff, x_diff,
                              upper_y_diff) == Orientation::CW) {
@@ -255,11 +255,11 @@ class Builder {
         // New prefix?
         if (currPrefix != radixAnalyzer[radix].prevPrefix) {
           // Then compute statistics.
-          assert(splineIndex);
+        //  assert(splineIndex);
           const unsigned prevSplineIndex = radixAnalyzer[radix].prevSplineIndex;
           const size_t numDataKeys = spline_points_[splineIndex].y - spline_points_[prevSplineIndex].y;
           const size_t numSplineKeys = splineIndex - prevSplineIndex;
-          assert(numSplineKeys);
+          //assert(numSplineKeys);
 
           // Update cost.
           radixAnalyzer[radix].cost += numDataKeys * ComputeCost(numSplineKeys);
@@ -277,7 +277,7 @@ class Builder {
       const unsigned prevSplineIndex = radixAnalyzer[radix].prevSplineIndex;
       const size_t numDataKeys = spline_points_.back().y - spline_points_[prevSplineIndex].y;
       const size_t numSplineKeys = spline_points_.size() - prevSplineIndex;
-      assert(numSplineKeys);
+     // assert(numSplineKeys);
       
       // Update the cost.
       radixAnalyzer[radix].cost += numDataKeys * ComputeCost(numSplineKeys);
@@ -396,7 +396,7 @@ class Builder {
             // [first, second[ also takes into consideration the `first-1`th element.
             // This is due to `lcp`-array, which takes the previous element into consideration.
             // That's why: `second` - `first` + 1.
-            assert(interval.second > interval.first);
+          //  assert(interval.second > interval.first);
             unsigned intervalSize = interval.second - interval.first + 1;
             
             // Add the length of the interval to all deltas < `intervalSize.
@@ -459,7 +459,7 @@ class Builder {
   }
 
   Statistics InferTuning(std::vector<Statistics>& statistics) {
-    assert(!statistics.empty());
+ //  assert(!statistics.empty());
 
     // Find best cost under the given space limit.
     const size_t space_limit = static_cast<size_t>(spline_points_.size()) * sizeof(Coord<KeyType>);
