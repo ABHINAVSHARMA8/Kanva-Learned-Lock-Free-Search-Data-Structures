@@ -38,7 +38,7 @@ void PlexModel<key_t>::train(const std::vector<key_t> &keys,const std::vector<si
     }
     std::sort(model_keys.begin(),model_keys.end());
     
-    vec=&model_keys;
+    vec=model_keys;
     std::cout<<"Length of vec in training is "<<vec.size()<<std::endl;
     
 
