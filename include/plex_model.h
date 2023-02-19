@@ -33,7 +33,7 @@ public:
 
 private:
     size_t maxErr = 0;
-    ts::TrieSpline<KeyType> ts_;
+    ts::TrieSpline<KeyType> ts;
     std::vector<key_t> &keys;
     
 };
