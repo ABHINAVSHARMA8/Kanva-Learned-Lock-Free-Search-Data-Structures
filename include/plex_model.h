@@ -32,6 +32,7 @@ public:
 
 private:
     size_t maxErr = 0;
+    auto ts;
     std::vector<key_t> &keys;
     
 };
