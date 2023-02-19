@@ -37,16 +37,16 @@ void PlexModel<key_t>::train(const std::vector<key_t> &keys,const std::vector<si
         model_keys[i] = keys[i];
     }
     std::sort(model_keys.begin(),model_keys.end());
-    this->vec=model_keys;
+   vec=model_keys;
     
 
     // Build TS
     uint64_t min = model_keys.front();
     uint64_t max = model_keys.back();
-    ts::Builder<uint64_t> tsb(min, max, /*spline_max_error=*/this->maxErr);
+    ts::Builder<uint64_t> tsb(min, max, /*spline_max_error=*/maxErr);
 
     for (const auto& key : model_keys) tsb.AddKey(key);
-    this->ts = tsb.Finalize();
+    ts = tsb.Finalize();
 }
 
 template<class key_t>
@@ -58,13 +58,13 @@ void PlexModel<key_t>::print_weights() const {
 template <class key_t>
 size_t PlexModel<key_t>::predict(const key_t &key) const{
     // Search using TS
-    if(this->vec.size()==0) return 0;
-    std::cout<<"Length of vec is "<<this->vec.size()<<std::endl;
-    ts::SearchBound bound = this->ts.GetSearchBound(key);
-    auto start = std::begin(this->vec) + bound.begin;
-    auto last = std::begin(this->vec) + bound.end;
-    auto pos = std::lower_bound(start, last,key) - begin(this->vec);
-    assert(this->vec[pos] == key);
+    //if(this->vec.size()==0) return 0;
+    std::cout<<"Length of vec is "<<vec.size()<<std::endl;
+    ts::SearchBound bound = ts.GetSearchBound(key);
+    auto start = std::begin(vec) + bound.begin;
+    auto last = std::begin(vec) + bound.end;
+    auto pos = std::lower_bound(start, last,key) - begin(vec);
+    assert(vec[pos] == key);
     return pos;
 }
 
@@ -85,14 +85,14 @@ template <class key_t>
 size_t PlexModel<key_t>::max_error(
     const typename std::vector<key_t>::const_iterator &keys_begin,
     uint32_t size) {
-    return this->maxErr;
+    return maxErr;
 }
 
 template <class key_t>
 size_t PlexModel<key_t>::max_error(const std::vector<key_t> &keys,
                                                const std::vector<size_t> &positions)
 {
-   return this->maxErr;
+   return maxErr;
 }
 
 
