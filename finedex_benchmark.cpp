@@ -42,7 +42,7 @@ void prepare(aidel_type *&ai){
     TIMER_BEGIN(0);
     size_t maxErr = 4;
     ai = new aidel_type();
-    ai->train(exist_keys, exist_keys);
+    ai->train(exist_keys, exist_keys, 32);
     TIMER_END_S(0,time_s);
     printf("%8.1lf s : %.40s\n", time_s, "training");
     ai->self_check();
