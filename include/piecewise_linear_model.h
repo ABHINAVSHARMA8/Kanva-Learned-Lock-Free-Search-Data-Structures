@@ -357,7 +357,7 @@ size_t make_segmentation_data(size_t n, size_t epsilon, Fin in, Fout out, plexmo
         else {
             canonical_segment cs = opt.get_segment();
             auto[cs_slope, cs_intercept] = cs.get_floating_point_segment(cs.get_first_x());
-            plexrmodel_type model();
+            plexmodel_type model();
             out(model, keys.begin(), keys.begin(), keys.size(), epsilon);
             // alwayse start from 0 for each segment
             std::vector<X>().swap(keys);
@@ -378,7 +378,7 @@ size_t make_segmentation_data(size_t n, size_t epsilon, Fin in, Fout out, plexmo
     //out(start, n, opt.get_segment());
     canonical_segment cs = opt.get_segment();
     auto[cs_slope, cs_intercept] = cs.get_floating_point_segment(cs.get_first_x());
-    plexrmodel_type model();
+    plexmodel_type model();
     out(model, keys.begin(), keys.begin(), keys.size(), epsilon);
     return ++c;
 }

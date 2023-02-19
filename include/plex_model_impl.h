@@ -31,7 +31,7 @@ void PlexModel<key_t>::train(const std::vector<key_t> &keys,
                                          const std::vector<size_t> &positions)
 {
     std::sort(keys.begin(), keys.end());
-    this.keys=keys;
+    this->keys=keys;
 
     // Build TS
     uint64_t min = keys.front();
@@ -39,7 +39,7 @@ void PlexModel<key_t>::train(const std::vector<key_t> &keys,
     ts::Builder<uint64_t> tsb(min, max, /*spline_max_error=*/maxErr);
 
     for (const auto& key : keys) tsb.AddKey(key);
-    auto ts = tsb.Finalize()
+    this.ts = tsb.Finalize();
 }
 
 template<class key_t>
@@ -51,7 +51,7 @@ void PlexModel<key_t>::print_weights() const {
 template <class key_t>
 size_t PlexModel<key_t>::predict(const key_t &key) const{
     // Search using TS
-    ts::SearchBound bound = ts.GetSearchBound(key);
+    ts::SearchBound bound = this.ts.GetSearchBound(key);
     auto start = std::begin(keys) + bound.begin,
         last = std::begin(keys) + bound.end;
     auto pos = std::lower_bound(start, last,key) - begin(keys);

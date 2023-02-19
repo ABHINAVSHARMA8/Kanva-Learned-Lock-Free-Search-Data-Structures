@@ -26,6 +26,7 @@ public:
                      const std::vector<size_t> &positions);
     
     inline size_t get_maxErr() { return maxErr; }
+    void print_weights() const;
 
 private:
     size_t maxErr = 0;
