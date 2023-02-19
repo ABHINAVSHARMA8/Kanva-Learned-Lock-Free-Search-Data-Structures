@@ -6,7 +6,7 @@
 #include "plex_model_impl.h"
 #include "aidel_model.h"
 #include "aidel_model_impl.h"
-#include "piecewise_linear_model.h"
+//#include "piecewise_linear_model.h"
 
 namespace aidel {
 
@@ -15,7 +15,7 @@ class AIDEL{
 public:
     typedef aidel::AidelModel<key_t, val_t> aidelmodel_type;
     typedef PlexModel<key_t> plexmodel_type;
-    typedef typename OptimalPiecewiseLinearModel<key_t, size_t>::CanonicalSegment canonical_segment;
+   // typedef typename OptimalPiecewiseLinearModel<key_t, size_t>::CanonicalSegment canonical_segment;
    // typedef aidel::LevelIndex<key_t> root_type;
 
 public:
@@ -52,7 +52,7 @@ private:
     std::vector<key_t> model_keys;
     std::vector<aidelmodel_type> aimodels;
     //root_type* root = nullptr;
-    std::vector<canonical_segment> segments;
+    //std::vector<canonical_segment> segments;
 
     int maxErr = 64;
     int learning_step = 1000;

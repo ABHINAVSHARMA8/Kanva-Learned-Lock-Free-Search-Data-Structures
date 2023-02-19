@@ -5,7 +5,7 @@
 #include "util.h"
 #include "aidel_model.h"
 #include "aidel_model_impl.h"
-#include "piecewise_linear_model.h"
+//#include "piecewise_linear_model.h"
 
 namespace aidel {
 
@@ -79,7 +79,7 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
     assert(model_keys.size()==aimodels.size());
 }
 
-template<class key_t, class val_t>
+/*template<class key_t, class val_t>
 size_t AIDEL<key_t, val_t>::backward_train(const typename std::vector<key_t>::const_iterator &keys_begin, 
                                            const typename std::vector<val_t>::const_iterator &vals_begin,
                                            uint32_t size, int step)
@@ -106,7 +106,7 @@ size_t AIDEL<key_t, val_t>::backward_train(const typename std::vector<key_t>::co
     }
     end = backward_train(keys_begin, vals_begin, end, int(step*learning_rate));
 	return end;
-}
+}*/
 
 template<class key_t, class val_t>
 void AIDEL<key_t, val_t>::append_model(plexmodel_type &model, 
@@ -225,7 +225,7 @@ inline result_t AIDEL<key_t, val_t>::remove(const key_t& key)
 }
 
 // ========================== using OptimalLPR train the model ==========================
-template<class key_t, class val_t>
+/*template<class key_t, class val_t>
 void AIDEL<key_t, val_t>::train_opt(const std::vector<key_t> &keys, 
                                     const std::vector<val_t> &vals, size_t _maxErr)
 {
@@ -238,40 +238,13 @@ void AIDEL<key_t, val_t>::train_opt(const std::vector<key_t> &keys,
     segments = make_segmentation(keys.begin(), keys.end(), maxErr);
     COUT_THIS("[aidle] get models -> "<< segments.size());
 
-    /*
-    // ===== predict the positions ===========
-    std::vector<pair_type> predicts;
-    predicts.reserve(keys.size());
+   
+}*/
 
-    auto it = segments.begin();
-    auto [slope, intercept] = it->get_floating_point_segment(it->get_first_x());
-    //COUT_THIS(slope<<", "<<intercept<<", "<<keys[0]<<", "<<it->get_first_x());
-
-    for (auto i = 0; i < keys.size(); ++i) {
-        if (i != 0 && keys[i] == keys[i - 1])
-            continue;
-        if (std::next(it) != segments.end() && std::next(it)->get_first_x() <= keys[i]) {
-            ++it;
-            std::tie(slope, intercept) = it->get_floating_point_segment(it->get_first_x());
-        }
-
-        auto pos = (keys[i] - it->get_first_x()) * slope + intercept;
-        pos = pos<=0? 0:pos;
-        size_t e;
-        if(i>pos) e = i-pos;
-        else e=pos-i;
-        predicts.push_back(pair_type(pos, e));
-        // assert(e <= maxErr + 1);
-    }
-
-    //assert(model_keys.size()==aimodels.size());
-    return predicts;*/
-}
-
-template<class key_t, class val_t>
+/*template<class key_t, class val_t>
 size_t AIDEL<key_t, val_t>::model_size(){
     return segments.size();
-}
+}*/
 
 
 

@@ -16,6 +16,7 @@ class PlexModel{
 
 public:
     inline PlexModel();
+    inline PlexModel(std::vector<double> &a,ts::TrieSpline<key_t> ts);
     ~PlexModel();
     void train(const typename std::vector<key_t>::const_iterator &it, size_t size);
     void train(const std::vector<key_t> &keys,const std::vector<size_t> &positions);
@@ -28,6 +29,8 @@ public:
                      const std::vector<size_t> &positions);
     
     inline size_t get_maxErr() { return maxErr; }
+    inline std::vector<double> get_vec(){ return vec; }
+    inline ts::TrieSpline<key_t> get_ts(){ return ts; }
     void print_weights() const;
 
 private:

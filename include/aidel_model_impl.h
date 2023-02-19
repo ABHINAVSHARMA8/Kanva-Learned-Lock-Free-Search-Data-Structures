@@ -29,7 +29,7 @@ AidelModel<key_t, val_t>::AidelModel(plexmodel_type &plexmodel,
                                      const typename std::vector<val_t>::const_iterator &vals_begin, 
                                      size_t size, size_t _maxErr) : maxErr(_maxErr), capacity(size)
 {
-    model=new plexmodel_type();
+    model=new plexmodel_type(plex_model.get_vec(),plex_model.get_ts());
     keys = (key_t *)malloc(sizeof(key_t)*size);
     vals = (val_t *)malloc(sizeof(val_t)*size);
     valid_flag = (bool*)malloc(sizeof(bool)*size);
