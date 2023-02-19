@@ -59,7 +59,7 @@ template <class key_t>
 size_t PlexModel<key_t>::predict(const key_t &key) const{
     // Search using TS
     ts::SearchBound bound = this->ts.GetSearchBound(key);
-    auto start = std::begin(this->vec) + bound.begin,
+    auto start = std::begin(this->vec) + bound.begin;
     auto last = std::begin(this->vec) + bound.end;
     auto pos = std::lower_bound(start, last,key) - begin(this->vec);
     assert(this->vec[pos] == key);
