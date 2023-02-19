@@ -4,6 +4,7 @@
 
 #include "plex/ts/builder.h"
 #include "plex/ts/common.h"
+#include "plex/ts/ts.h"
 #include <array>
 #include <vector>
 #include "util.h"
@@ -32,7 +33,7 @@ public:
 
 private:
     size_t maxErr = 0;
-   
+    ts::TrieSpline<KeyType> ts_;
     std::vector<key_t> &keys;
     
 };
