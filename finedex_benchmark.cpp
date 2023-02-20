@@ -35,6 +35,11 @@ int main(int argc, char **argv) {
     run_benchmark(ai, Config.runtime);
     ai->self_check();
     if(ai!=nullptr) delete ai;
+    e=clock();
+
+    double time_taken = double(e - s)/double(CLOCKS_PER_SEC);
+
+    std::cout<<" execution time= "<<time_taken<<std::endl;
     return 0;
 }
 
@@ -50,11 +55,7 @@ void prepare(aidel_type *&ai){
     printf("%8.1lf s : %.40s\n", time_s, "training");
     ai->self_check();
     COUT_THIS("check aidel: OK");
-    e=clock();
-
-    double time_taken = double(e - s)/double(CLOCKS_PER_SEC);
-
-    std::cout<<" execution time= "<<time_taken<<std::endl;
+    
 }
 
 void run_benchmark(aidel_type *ai, size_t sec) {
