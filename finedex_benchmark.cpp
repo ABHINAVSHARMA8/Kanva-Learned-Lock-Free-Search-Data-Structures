@@ -2,7 +2,7 @@
 #include "include/function.h"
 #include "include/aidel.h"
 #include "include/aidel_impl.h"
-
+#include<time.h>
 
 struct alignas(CACHELINE_SIZE) ThreadParam;
 
@@ -25,6 +25,9 @@ void *run_fg(void *param);
 void prepare(aidel_type *&ai);
 
 int main(int argc, char **argv) {
+    clock_t s,e;
+    s=clock();
+
     parse_args(argc, argv);
     load_data();
     aidel_type *ai;
@@ -47,6 +50,11 @@ void prepare(aidel_type *&ai){
     printf("%8.1lf s : %.40s\n", time_s, "training");
     ai->self_check();
     COUT_THIS("check aidel: OK");
+    e=clock();
+
+    double time_taken = double(e - s)/double(CLOCKS_PER_SEC);
+
+    std::cout<<" execution time= "<<time_taken<<std::endl;
 }
 
 void run_benchmark(aidel_type *ai, size_t sec) {
