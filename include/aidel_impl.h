@@ -117,12 +117,12 @@ void AIDEL<key_t, val_t>::append_model(plexmodel_type &model,
     key_t key = *(keys_begin+size-1);
     
     // set learning_step
-    int n = size/20;
+   /*int n = size/20;
     learning_step = 1;
     while(n!=0){
-        n/=20;
+        n/=20; CHANGED
         learning_step*=20;
-    }
+    }*/
      
     assert(err<=maxErr);
     aidelmodel_type aimodel(model, keys_begin, vals_begin, size, maxErr);
