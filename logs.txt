@@ -1,6 +1,33 @@
+1.[micro] Read:Insert:Update:Delete:Scan = 1:0:0:0
+Config.runtime: 10
+Config.thread_num: 1
+Config.benchmark: 0
+[processing data]
+exist_keys.size(): 1000000
+non_exist_keys.size(): 0
+[Training aidel]
+training begin, length of training_data is:1000000 ,maxErr: 32
+[aidle] get models -> 100
+     0.4 s : training
+check aidel: OK
+[micro] prepare data ...
+[micro] Worker0 Ready.
+[micro] >>> sec 0 throughput: 4359994
+[micro] >>> sec 1 throughput: 4399162
+[micro] >>> sec 2 throughput: 4395219
+[micro] >>> sec 3 throughput: 4380716
+[micro] >>> sec 4 throughput: 4393142
+[micro] >>> sec 5 throughput: 4395993
+[micro] >>> sec 6 throughput: 4381197
+[micro] >>> sec 7 throughput: 4382589
+[micro] >>> sec 8 throughput: 4388494
+[micro] >>> sec 9 throughput: 4400112
+[micro] Throughput(op/s): 4387666
+ execution time= 10.9035
 
 
-[micro] Read:Insert:Update:Delete:Scan = 1:0:0:0
+
+2.[micro] Read:Insert:Update:Delete:Scan = 1:0:0:0
 Config.runtime: 10
 Config.thread_num: 1
 Config.benchmark: 0
@@ -27,7 +54,7 @@ check aidel: OK
 [micro] Throughput(op/s): 1741274
  execution time= 11.4786
 
-[micro] Read:Insert:Update:Delete:Scan = 1:0:0:0
+3.[micro] Read:Insert:Update:Delete:Scan = 1:0:0:0
 Config.runtime: 10
 Config.thread_num: 1
 Config.benchmark: 0
@@ -55,7 +82,7 @@ check aidel: OK
  execution time= 12.0146
 
 BEFORE
-[micro] Read:Insert:Update:Delete:Scan = 1:0:0:0
+4.[micro] Read:Insert:Update:Delete:Scan = 1:0:0:0
 Config.runtime: 10
 Config.thread_num: 1
 Config.benchmark: 0
