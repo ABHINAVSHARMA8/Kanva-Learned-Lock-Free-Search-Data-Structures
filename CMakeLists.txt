@@ -25,3 +25,5 @@ add_executable(finedex_benchmark ${PLEX_INCLUDE_H} ${finedex_benchmark_SORUCES} 
 add_executable(finedex_search ${PLEX_INCLUDE_H} ${finedex_search_SORUCES} )
 add_executable(finedex_ycsb ${PLEX_INCLUDE_H} ${finedex_ycsb_SORUCES} )
 target_link_libraries(finedex_benchmark pthread)
+target_link_libraries(finedex_search pthread)
+target_link_libraries(finedex_ycsb pthread)
