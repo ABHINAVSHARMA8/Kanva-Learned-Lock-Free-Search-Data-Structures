@@ -3,23 +3,58 @@ Config.runtime: 10
 Config.thread_num: 1
 Config.benchmark: 0
 [processing data]
-exist_keys.size(): 999999
+exist_keys.size(): 1000000
 non_exist_keys.size(): 0
 [Training aidel]
-training begin, length of training_data is:999999 ,maxErr: 32
-[aidle] get models -> 1000
-     5.3 s : training
+training begin, length of training_data is:1000000 ,maxErr: 32
+[aidle] get models -> 100
+     1.0 s : training
 check aidel: OK
 [micro] prepare data ...
 [micro] Worker0 Ready.
-[micro] >>> sec 0 throughput: 2233568
-[micro] >>> sec 1 throughput: 2399052
-[micro] >>> sec 2 throughput: 2401286
-[micro] >>> sec 3 throughput: 1907789
-[micro] >>> sec 4 throughput: 1713412
-[micro] >>> sec 5 throughput: 1712439
-[micro] >>> sec 6 throughput: 1731191
-[micro] >>> sec 7 throughput: 1719058
-[micro] >>> sec 8 throughput: 1711613
-[micro] >>> sec 9 throughput: 2248377
-[micro] Throughput(op/s): 1977783
+[micro] >>> sec 0 throughput: 1792255
+[micro] >>> sec 1 throughput: 1793137
+[micro] >>> sec 2 throughput: 1798156
+[micro] >>> sec 3 throughput: 1794113
+[micro] >>> sec 4 throughput: 2401279
+[micro] >>> sec 5 throughput: 2562854
+[micro] >>> sec 6 throughput: 2544372
+[micro] >>> sec 7 throughput: 1936884
+[micro] >>> sec 8 throughput: 1792276
+[micro] >>> sec 9 throughput: 1788146
+[micro] Throughput(op/s): 2020348
+ execution time= 12.0146
+
+BEFORE
+[micro] Read:Insert:Update:Delete:Scan = 1:0:0:0
+Config.runtime: 10
+Config.thread_num: 1
+Config.benchmark: 0
+[processing data]
+exist_keys.size(): 99999[micro] Read:Insert:Update:Delete:Scan = 1:0:0:0
+Config.runtime: 10
+Config.thread_num: 1
+Config.benchmark: 0
+[processing data]
+exist_keys.size(): 1000000
+non_exist_keys.size(): 0
+[Training aidel]
+training begin, length of training_data is:1000000 ,maxErr: 32
+[aidle] get models -> 1000
+     4.1 s : training
+check aidel: OK
+[micro] prepare data ...
+[micro] Worker0 Ready.
+[micro] >>> sec 0 throughput: 1742060
+[micro] >>> sec 1 throughput: 1745633
+[micro] >>> sec 2 throughput: 1743312
+[micro] >>> sec 3 throughput: 1746069
+[micro] >>> sec 4 throughput: 1761873
+[micro] >>> sec 5 throughput: 1751054
+[micro] >>> sec 6 throughput: 1750523
+[micro] >>> sec 7 throughput: 2099960
+[micro] >>> sec 8 throughput: 2467884
+[micro] >>> sec 9 throughput: 2461491
+[micro] Throughput(op/s): 1926987
+ execution time= 15.0162
+
