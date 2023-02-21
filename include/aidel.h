@@ -55,7 +55,7 @@ private:
     //std::vector<canonical_segment> segments;
 
     int maxErr = 64;
-    int learning_step = 1000;
+    int learning_step = 2000;
     float learning_rate = 0.1;
 
 };
