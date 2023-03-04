@@ -34,7 +34,7 @@ public:
     void print_weights() const;
 
 private:
-    size_t maxErr = 32;
+    size_t maxErr = 0;
     ts::TrieSpline<key_t> ts;
     std::vector<double> vec;
     

@@ -1,3 +1,60 @@
+With 1000 models
+[micro] Read:Insert:Update:Delete:Scan = 1:0:0:0
+Config.runtime: 10
+Config.thread_num: 1
+Config.benchmark: 0
+[processing data]
+exist_keys.size(): 1000000
+non_exist_keys.size(): 0
+[Training aidel]
+training begin, length of training_data is:1000000 ,maxErr: 32
+[aidle] get models -> 1000
+     4.9 s : training
+check aidel: OK
+[micro] prepare data ...
+[micro] Worker0 Ready.
+[micro] >>> sec 0 throughput: 5111219
+[micro] >>> sec 1 throughput: 5257183
+[micro] >>> sec 2 throughput: 5251252
+[micro] >>> sec 3 throughput: 5230998
+[micro] >>> sec 4 throughput: 5243318
+[micro] >>> sec 5 throughput: 5236748
+[micro] >>> sec 6 throughput: 5149666
+[micro] >>> sec 7 throughput: 5217572
+[micro] >>> sec 8 throughput: 5029245
+[micro] >>> sec 9 throughput: 5144551
+[micro] Throughput(op/s): 5187185
+
+
+4th march - 0 spline error
+[micro] Read:Insert:Update:Delete:Scan = 1:0:0:0
+Config.runtime: 10
+Config.thread_num: 1
+Config.benchmark: 0
+[processing data]
+exist_keys.size(): 1000000
+non_exist_keys.size(): 0
+[Training aidel]
+training begin, length of training_data is:1000000 ,maxErr: 32
+[aidle] get models -> 100
+     1.6 s : training
+check aidel: OK
+[micro] prepare data ...
+[micro] Worker0 Ready.
+[micro] >>> sec 0 throughput: 5344560
+[micro] >>> sec 1 throughput: 4951732
+[micro] >>> sec 2 throughput: 5406808
+[micro] >>> sec 3 throughput: 5448938
+[micro] >>> sec 4 throughput: 5415990
+[micro] >>> sec 5 throughput: 5437550
+[micro] >>> sec 6 throughput: 5458389
+[micro] >>> sec 7 throughput: 5455822
+[micro] >>> sec 8 throughput: 5444261
+[micro] >>> sec 9 throughput: 5445052
+[micro] Throughput(op/s): 5380920
+
+
+
 1.[micro] Read:Insert:Update:Delete:Scan = 1:0:0:0
 Config.runtime: 10
 Config.thread_num: 1

@@ -54,7 +54,7 @@ private:
     //root_type* root = nullptr;
     //std::vector<canonical_segment> segments;
 
-    int maxErr = 64;
+    int maxErr = 0;
     int learning_step = 10000;
     float learning_rate = 0.1;
 

@@ -11,7 +11,7 @@ namespace aidel {
 
 template<class key_t, class val_t>
 inline AIDEL<key_t, val_t>::AIDEL()
-    : maxErr(64), learning_step(10000), learning_rate(0.1)
+    : maxErr(0), learning_step(10000), learning_rate(0.1)
 {
     //root = new root_type();
 }
