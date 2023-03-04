@@ -52,7 +52,7 @@ void PlexModel<key_t>::train(const std::vector<key_t> &keys,const std::vector<si
     // Build TS
     uint64_t min = model_keys.front();
     uint64_t max = model_keys.back();
-    ts::Builder<uint64_t> tsb(min, max, /*spline_max_error=*/maxErr);
+    ts::Builder<uint64_t> tsb(min, max, /*spline_max_error=*/0);//CHANGE
 
     for (const auto& key : model_keys) tsb.AddKey(key);
     ts = tsb.Finalize();
@@ -68,7 +68,7 @@ template <class key_t>
 size_t PlexModel<key_t>::predict(const key_t &key) const{
     // Search using TS
    // std::cout<<"Length of vec is "<<vec.size()<<std::endl;
-    if(this->vec.size()==0) return 0;
+    //if(this->vec.size()==0) return 0;
     double model_key = key;
     
     ts::SearchBound bound = ts.GetSearchBound(model_key);
