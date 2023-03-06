@@ -76,11 +76,11 @@ size_t PlexModel<key_t>::predict(const key_t &key) const{
     if(vec[bound.begin+1]==model_key) return bound.begin+1;
     if(vec[bound.begin+2]==model_key) return bound.begin+2;
    std::cout<<"Binary Search"<<std::endl;
-    auto start = std::begin(vec) ;
-    auto last = std::end(vec) ;
     
-    auto pos = std::lower_bound(start, last,model_key) -1 - begin(vec);
-    
+    if(vec[bound.begin+2]<model_key) return bound.begin+2
+    if(vec[bound.begin+1]<model_key) return bound.begin+1;
+    if(vec[bound.begin]<model_key) return bound.begin;
+
     return pos;
 }
 
