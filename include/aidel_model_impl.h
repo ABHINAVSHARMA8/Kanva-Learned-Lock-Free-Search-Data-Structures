@@ -136,7 +136,7 @@ bool AidelModel<key_t, val_t>::find(const key_t &key, val_t &val)
 {
     size_t pos = predict(key);
     //pos = find_lower(key, pos);
-    pos = locate_in_levelbin(key, pos);
+    //pos = locate_in_levelbin(key, pos);
     if(key == keys[pos]){
         if(valid_flag[pos]){
             val = vals[pos];
@@ -159,7 +159,7 @@ bool AidelModel<key_t, val_t>::con_find(const key_t &key, val_t &val)
 {
     size_t pos = predict(key);
     //pos = find_lower(key, pos);
-    pos = locate_in_levelbin(key, pos);
+   // pos = locate_in_levelbin(key, pos);
     if(key == keys[pos]){
         if(valid_flag[pos]){
             val = vals[pos];
@@ -176,7 +176,7 @@ template<class key_t, class val_t>
 result_t AidelModel<key_t, val_t>::con_find_retrain(const key_t &key, val_t &val)
 {
     size_t pos = predict(key);
-    pos = locate_in_levelbin(key, pos);
+   // pos = locate_in_levelbin(key, pos);
     if(key == keys[pos]){
         if(valid_flag[pos]){
             val = vals[pos];
@@ -337,7 +337,7 @@ template<class key_t, class val_t>
 result_t AidelModel<key_t, val_t>::update(const key_t &key, const val_t &val)
 {
     size_t pos = predict(key);
-    pos = locate_in_levelbin(key, pos);
+   // pos = locate_in_levelbin(key, pos);
     if(key == keys[pos]){
         if(valid_flag[pos]){
             vals[pos] = val;
@@ -376,7 +376,7 @@ template<class key_t, class val_t>
 inline bool AidelModel<key_t, val_t>::con_insert(const key_t &key, const val_t &val)
 {
     size_t pos = predict(key);
-    pos = locate_in_levelbin(key, pos);
+   // pos = locate_in_levelbin(key, pos);
 
     if(key == keys[pos]){
         if(valid_flag[pos]){
@@ -406,7 +406,7 @@ template<class key_t, class val_t>
 result_t AidelModel<key_t, val_t>::con_insert_retrain(const key_t &key, const val_t &val)
 {
     size_t pos = predict(key);
-    pos = locate_in_levelbin(key, pos);
+    //pos = locate_in_levelbin(key, pos);
 
     if(key == keys[pos]){
         if(valid_flag[pos]){
@@ -482,7 +482,7 @@ template<class key_t, class val_t>
 result_t AidelModel<key_t, val_t>::remove(const key_t &key)
 {
     size_t pos = predict(key);
-    pos = locate_in_levelbin(key, pos);
+    //pos = locate_in_levelbin(key, pos);
     if(key == keys[pos]){
         if(valid_flag[pos]){
             valid_flag[pos] = false;
@@ -521,7 +521,7 @@ int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector
     size_t remaining = n;
 
     size_t pos = predict(key);
-    pos = locate_in_levelbin(key, pos);
+    //pos = locate_in_levelbin(key, pos);
     while(remaining>0 && pos<=capacity) {
         if(pos<capacity && keys[pos]>=key){
             result.push_back(std::pair<key_t, val_t>(keys[pos], vals[pos]));

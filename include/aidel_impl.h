@@ -49,29 +49,7 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
         end += learning_step;
         if(end>=keys.size())
             end = keys.size();
-        // equal
-        /*
-        if(err == maxErr) {
-            append_model(model, keys.begin()+start, vals.begin()+start, end-start, err);
-        } else if(err < maxErr) {
-            if(end>=keys.size()){
-                append_model(model, keys.begin()+start, vals.begin()+start, end-start, err);
-                break;
-            }
-            end += learning_step;
-            if(end>keys.size()){
-                end = keys.size();
-            }
-            continue;
-        } else {
-            size_t offset = backward_train(keys.begin()+start, vals.begin()+start, end-start, int(learning_step*learning_rate));
-			end = start + offset;
-        }
-        start = end;
-        end += learning_step;
-        if(end>=keys.size()){
-            end = keys.size();
-        }*/
+       
     }
 
     //root = new root_type(model_keys);
@@ -79,34 +57,7 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
     assert(model_keys.size()==aimodels.size());
 }
 
-/*template<class key_t, class val_t>
-size_t AIDEL<key_t, val_t>::backward_train(const typename std::vector<key_t>::const_iterator &keys_begin, 
-                                           const typename std::vector<val_t>::const_iterator &vals_begin,
-                                           uint32_t size, int step)
-{   
-    if(size<=10){
-        step = 1;
-    } else {
-        while(size<=step){
-            step = int(step*learning_rate);
-        }
-    }
-    assert(step>0);
-    size_t start = 0;
-    size_t end = size-step;
-    while(end>0){
-        plexmodel_type model;
-        model.train(keys_begin, end);
-        size_t err = model.get_maxErr();
-        if(err<=maxErr){
-            append_model(model, keys_begin, vals_begin, end, err);
-            return end;
-        }
-        end -= step;
-    }
-    end = backward_train(keys_begin, vals_begin, end, int(step*learning_rate));
-	return end;
-}*/
+
 
 template<class key_t, class val_t>
 void AIDEL<key_t, val_t>::append_model(plexmodel_type &model, 
@@ -115,14 +66,7 @@ void AIDEL<key_t, val_t>::append_model(plexmodel_type &model,
                                        size_t size, int err)
 {
     key_t key = *(keys_begin+size-1);
-    
-    // set learning_step
-   /*int n = size/20;
-    learning_step = 1;
-    while(n!=0){
-        n/=20; CHANGED
-        learning_step*=20;
-    }*/
+
      
     assert(err<=maxErr);
     aidelmodel_type aimodel(model, keys_begin, vals_begin, size, maxErr);
@@ -170,10 +114,7 @@ void AIDEL<key_t, val_t>::self_check()
 template<class key_t, class val_t>
 inline result_t AIDEL<key_t, val_t>::find(const key_t &key, val_t &val)
 {   
-    /*size_t model_pos = root->find(key);
-    if(model_pos >= aimodels.size())
-        model_pos = aimodels.size()-1;
-    return aimodels[model_pos].con_find(key, val);*/
+    
 
     return find_model(key)[0].con_find_retrain(key, val);
 
