@@ -57,17 +57,17 @@ void prepare(aidel_type *&ai){
 }
 
 void run_benchmark(aidel_type *ai, size_t sec) {
-    pthread_t threads[2];
-    thread_param_t thread_params[2];
+    pthread_t threads[num_threads];
+    thread_param_t thread_params[num_threads];
     // check if parameters are cacheline aligned
-    for (size_t i = 0; i < 2; i++) {
+    for (size_t i = 0; i < num_threads; i++) {
         if ((uint64_t)(&(thread_params[i])) % CACHELINE_SIZE != 0) {
             COUT_N_EXIT("wrong parameter address: " << &(thread_params[i]));
         }
     }
 
     running = false;
-    for(size_t worker_i = 0; worker_i < 2; worker_i++){
+    for(size_t worker_i = 0; worker_i < num_threads; worker_i++){
         thread_params[worker_i].ai = ai;
         thread_params[worker_i].thread_id = worker_i;
         thread_params[worker_i].throughput = 0;
@@ -82,12 +82,12 @@ void run_benchmark(aidel_type *ai, size_t sec) {
     while (ready_threads < Config.thread_num) sleep(0.5);
 
     running = true;
-    std::vector<size_t> tput_history(2, 0);
+    std::vector<size_t> tput_history(num_threads, 0);
     size_t current_sec = 0;
     while (current_sec < sec) {
         sleep(1);
         uint64_t tput = 0;
-        for (size_t i = 0; i < 2; i++) {
+        for (size_t i = 0; i < num_threads; i++) {
             tput += thread_params[i].throughput - tput_history[i];
             tput_history[i] = thread_params[i].throughput;
         }
@@ -97,7 +97,7 @@ void run_benchmark(aidel_type *ai, size_t sec) {
 
     running = false;
     void *status;
-    for (size_t i = 0; i < 2; i++) {
+    for (size_t i = 0; i < num_threads; i++) {
         int rc = pthread_join(threads[i], &status);
         if (rc) {
             COUT_N_EXIT("Error:unable to join," << rc);
