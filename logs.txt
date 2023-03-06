@@ -1,4 +1,4 @@
-With 1000 models
+7th March
 [micro] Read:Insert:Update:Delete:Scan = 1:0:0:0
 Config.runtime: 10
 Config.thread_num: 1
@@ -8,22 +8,23 @@ exist_keys.size(): 1000000
 non_exist_keys.size(): 0
 [Training aidel]
 training begin, length of training_data is:1000000 ,maxErr: 32
-[aidle] get models -> 1000
-     4.9 s : training
+[aidle] get models -> 100
+     1.0 s : training
 check aidel: OK
 [micro] prepare data ...
 [micro] Worker0 Ready.
-[micro] >>> sec 0 throughput: 5111219
-[micro] >>> sec 1 throughput: 5257183
-[micro] >>> sec 2 throughput: 5251252
-[micro] >>> sec 3 throughput: 5230998
-[micro] >>> sec 4 throughput: 5243318
-[micro] >>> sec 5 throughput: 5236748
-[micro] >>> sec 6 throughput: 5149666
-[micro] >>> sec 7 throughput: 5217572
-[micro] >>> sec 8 throughput: 5029245
-[micro] >>> sec 9 throughput: 5144551
-[micro] Throughput(op/s): 5187185
+[micro] >>> sec 0 throughput: 9280175
+[micro] >>> sec 1 throughput: 9327726
+[micro] >>> sec 2 throughput: 9330109
+[micro] >>> sec 3 throughput: 9333602
+[micro] >>> sec 4 throughput: 9331403
+[micro] >>> sec 5 throughput: 9293728
+[micro] >>> sec 6 throughput: 9288984
+[micro] >>> sec 7 throughput: 9306716
+[micro] >>> sec 8 throughput: 9166398
+[micro] >>> sec 9 throughput: 9384861
+[micro] Throughput(op/s): 9304376
+
 
 
 4th march - 0 spline error
