@@ -1,9 +1,11 @@
 To run:
-cd FINERdex
-mkdir -p build
-cd build
-cmake ..
-make
-./findex_benchmakr.cpp
+1. cd FINERdex
+2. mkdir -p build
+3. cd build
+4. cmake ..
+5. make
+6. ../findex_benchmark.
 
-Changes in learning step to be performed in include/aidel.h and include/aidel_impl.h
+TODO:
+1.remove locate in level bin in find() in aidel_model_impl.h
+2. For insert i) bin search ii) Train LR model side by side

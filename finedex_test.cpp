@@ -5,7 +5,7 @@
 #include<time.h>
 
 struct alignas(CACHELINE_SIZE) ThreadParam;
-int num_threads=2;
+int num_threads=1;
 
 typedef ThreadParam thread_param_t;
 typedef aidel::AIDEL<key_type, val_type> aidel_type;
