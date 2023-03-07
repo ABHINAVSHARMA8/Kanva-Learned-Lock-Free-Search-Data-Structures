@@ -69,7 +69,7 @@ template <class key_t>
 size_t PlexModel<key_t>::predict(const key_t &key) const{
     
     double model_key = key;
-    if(model_key<vec[0]) return -1;
+    if(model_key<vec[0]) return 0;
     
     ts::SearchBound bound = ts.GetSearchBound(model_key);
    // std::cout<<"Plex search range is "<<bound.begin<<" to "<<bound.end<<std::endl;

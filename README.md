@@ -7,5 +7,5 @@ To run:
 6. ../findex_benchmark.
 
 TODO:
-1.remove locate in level bin in find() in aidel_model_impl.h
-2. For insert i) bin search ii) Train LR model side by side
+
+1. Handle case of model_key<vec[0]
