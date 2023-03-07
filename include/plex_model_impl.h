@@ -75,7 +75,7 @@ size_t PlexModel<key_t>::predict(const key_t &key) const{
     if(vec[bound.begin]==model_key) return bound.begin;
     if(vec[bound.begin+1]==model_key) return bound.begin+1;
    // if(vec[bound.begin+2]==model_key) return bound.begin+2;
-   std::cout<<"Binary Search"<<std::endl;
+   //std::cout<<"Binary Search"<<std::endl;
     
     //if(vec[bound.begin+2]<model_key) return bound.begin+2
     if(vec[bound.begin+1]<model_key) return bound.begin+1;
