@@ -80,10 +80,16 @@ size_t PlexModel<key_t>::predict(const key_t &key) const{
    //std::cout<<"Binary Search"<<std::endl;
     
     if(bound.begin+2<vec.size()){
-        if(vec[bound.begin+2]<model_key) return bound.begin+2;
+        if(vec[bound.begin+2]<model_key) {
+            std::cout<<"Plex search"<<std::endl;
+            return bound.begin+2;}
     }
-    if(vec[bound.begin+1]<model_key) return bound.begin+1;
-    if(vec[bound.begin]<model_key) return bound.begin;
+    if(vec[bound.begin+1]<model_key) {
+        std::cout<<"Plex search"<<std::endl;
+        return bound.begin+1;}
+    if(vec[bound.begin]<model_key) {
+        std::cout<<"Plex search"<<std::endl;
+        return bound.begin;}
    // std::cout<<"Plex search failed"<<std::endl;
     return 0;
 }
