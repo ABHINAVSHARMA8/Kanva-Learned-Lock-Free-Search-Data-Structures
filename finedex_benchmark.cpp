@@ -146,6 +146,7 @@ void *run_fg(void *param) {
             }
         } else if (d <= Config.read_ratio+Config.insert_ratio){  // insert
             key_type dummy_key = non_exist_keys[insert_i % non_exist_keys.size()];
+            //dummy_key=1;
             res = ai->insert(dummy_key, dummy_key);
             //std::cout<<"Insert"<<std::endl;
             insert_i++;

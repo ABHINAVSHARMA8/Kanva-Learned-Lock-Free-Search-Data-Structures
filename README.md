@@ -8,4 +8,4 @@ To run:
 
 TODO:
 
-1. Handle case of model_key<vec[0]
+1. Line 48 of aidel_impl.h

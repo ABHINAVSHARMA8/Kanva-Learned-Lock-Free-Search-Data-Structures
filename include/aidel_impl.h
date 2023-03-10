@@ -55,6 +55,15 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
     //root = new root_type(model_keys);
     COUT_THIS("[aidle] get models -> "<< model_keys.size());
     assert(model_keys.size()==aimodels.size());
+
+    key_t min = keys.front();
+    key_t max = keys.back();
+    const unsigned numBins = 64; // each node will have 64 separate bins
+    const unsigned maxError = 1; // the error of the index
+    cht::Builder<key_t> chtb(min, max, numBins, maxError, false,false);
+    for (const auto& key2 : keys) chtb.AddKey(key2);
+    cht = chtb.Finalize();
+
 }
 
 
@@ -65,7 +74,7 @@ void AIDEL<key_t, val_t>::append_model(plexmodel_type &model,
                                        const typename std::vector<val_t>::const_iterator &vals_begin, 
                                        size_t size, int err)
 {
-    key_t key = *(keys_begin+size-1);
+    key_t key = *(keys_begin+size-1); //last element
 
      
     assert(err<=maxErr);
@@ -78,9 +87,18 @@ void AIDEL<key_t, val_t>::append_model(plexmodel_type &model,
 template<class key_t, class val_t>
 typename AIDEL<key_t, val_t>::aidelmodel_type* AIDEL<key_t, val_t>::find_model(const key_t &key)
 {
-    // root 
-    size_t model_pos = binary_search_branchless(&model_keys[0], model_keys.size(), key);
-    if(model_pos >= aimodels.size())
+
+    cht::SearchBound bound = cht.GetSearchBound(key);
+    size_t model_pos=-1;
+    if(model_keys[bound.begin]>key) model_pos=bound.begin;
+    for(int i=1;i<=2 && model_pos==-1;i++){
+        if(bound.begin+i<model_keys.size()){
+            if(model_keys[bound.begin+i]>key) model_pos=bound.begin+i;
+        }
+    }
+    
+
+  if(model_pos >= aimodels.size())
         model_pos = aimodels.size()-1;
     return &aimodels[model_pos];
 }
