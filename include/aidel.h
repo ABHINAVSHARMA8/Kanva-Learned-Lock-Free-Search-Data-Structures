@@ -8,6 +8,10 @@
 #include "aidel_model_impl.h"
 #include "cht/builder.h"
 #include "cht/cht.h"
+#include "plex/ts/builder.h"
+#include "plex/ts/common.h"
+#include "plex/ts/ts.h"
+
 
 //#include "piecewise_linear_model.h"
 
@@ -61,6 +65,7 @@ private:
     int learning_step = 10000;
     float learning_rate = 0.1;
     cht::CompactHistTree<key_t> cht;
+    ts::TrieSpline<key_t> ts;
 
 };
 

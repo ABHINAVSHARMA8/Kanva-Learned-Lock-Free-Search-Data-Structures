@@ -58,11 +58,18 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
 
     key_t min = keys.front();
     key_t max = keys.back();
-    const unsigned numBins = 64; // each node will have 64 separate bins
-    const unsigned maxError = 1; // the error of the index
+    const unsigned numBins = 128; // each node will have 64 separate bins
+    const unsigned maxError = 4; // the error of the index
     cht::Builder<key_t> chtb(min, max, numBins, maxError, false,false);
     for (const auto& key2 : keys) chtb.AddKey(key2);
     cht = chtb.Finalize();
+
+    /*uint64_t min = model_keys.front();
+    uint64_t max = model_keys.back();
+    ts::Builder<uint64_t> tsb(min, max,0);//CHANGE
+
+    for (const auto& key2 : model_keys) tsb.AddKey(key2);
+    ts = tsb.Finalize();*/
 
 }
 
@@ -87,16 +94,29 @@ void AIDEL<key_t, val_t>::append_model(plexmodel_type &model,
 template<class key_t, class val_t>
 typename AIDEL<key_t, val_t>::aidelmodel_type* AIDEL<key_t, val_t>::find_model(const key_t &key)
 {
-
-    cht::SearchBound bound = cht.GetSearchBound(key);
+    size_t model_key=key;
+    cht::SearchBound bound = cht.GetSearchBound(model_key);
     size_t model_pos=-1;
-    if(model_keys[bound.begin]>key) model_pos=bound.begin;
-    for(int i=1;i<=2 && model_pos==-1;i++){
+    if(model_keys[bound.begin]>model_key) model_pos=bound.begin;
+    for(int i=1;i<=5 && model_pos==-1;i++){
         if(bound.begin+i<model_keys.size()){
-            if(model_keys[bound.begin+i]>key) model_pos=bound.begin+i;
+            if(model_keys[bound.begin+i]>model_key) model_pos=bound.begin+i;
         }
     }
+    /*double model_key=key;size_t model_pos=-1;
+    ts::SearchBound bound = ts.GetSearchBound(model_key);
+    if(model_keys[bound.begin]>=model_key) model_pos=bound.begin;
+    if(model_pos==-1 && model_keys[bound.begin+1]==model_key) model_pos= bound.begin+1;
+    if(model_pos==-1 && bound.begin+2<model_keys.size()){
+     if(model_keys[bound.begin+2]>=model_key) model_pos= bound.begin+2;
+    }*/
     
+    
+    /*size_t model_pos=-1;
+    for(int i=0;i<model_keys.size() && model_pos==-1;i++) {
+        if(model_keys[i]>=key) model_pos=i;
+    }*/
+    //size_t model_pos = binary_search_branchless(&model_keys[0], model_keys.size(), key);
 
   if(model_pos >= aimodels.size())
         model_pos = aimodels.size()-1;
