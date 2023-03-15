@@ -101,12 +101,12 @@ inline uint8_t cmpxchgb(uint8_t *object, uint8_t expected,
 FORCEINLINE uint32_t bsr(uint32_t x) {
   return 31 - __builtin_clz(x);
 }
-
-static int binary_search_std (const int *arr, int n, int key) {
+template<typename KEY_TYPE>
+static int binary_search_std (const KEY_TYPE *arr, int n, KEY_TYPE key) {
     return (int) (std::lower_bound(arr, arr + n, key) - arr);
 }
-
-static int binary_search_simple(const int *arr, int n, int key) {
+template<typename KEY_TYPE>
+static int binary_search_simple(const KEY_TYPE *arr, int n, KEY_TYPE key) {
   intptr_t left = -1;
   intptr_t right = n;
   while (right - left > 1) {

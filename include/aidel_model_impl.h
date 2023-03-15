@@ -409,7 +409,7 @@ result_t AidelModel<key_t, val_t>::con_insert_retrain(const key_t &key, const va
     //size_t pos = locate_in_levelbin(key, pos1);
     //std::cout<<"insert "<<key<<" "<<keys[pos]<<std::endl;
    // std::cout<<pos-pos1<<std::endl;
-
+   //std::cout<<key<<" "<<keys[pos]<<std::endl;
     if(key == keys[pos]){
         if(valid_flag[pos]){
             return result_t::failed;

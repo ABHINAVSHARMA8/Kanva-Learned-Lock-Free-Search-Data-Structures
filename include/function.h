@@ -18,9 +18,9 @@ void lognormal_data_with_insert_factor();
 void skew_data();
 void load_ycsb(const char *path);
 void run_ycsb(const char *path);
-std::vector<int> read_data(const char *path);
 template<typename key_type>
 std::vector<key_type> read_timestamp(const char *path);
+std::vector<int> read_data(const char *path);
 template<typename key_type>
 std::vector<key_type> read_document(const char *path);
 
@@ -32,12 +32,12 @@ typedef struct operation_item {
 
 // parameters
 struct config{
-	double read_ratio = 1;
-	double insert_ratio = 0;
+	double read_ratio = 0.5;
+	double insert_ratio = 0.5;
 	double update_ratio = 0;
 	double delete_ratio = 0;
-	size_t item_num  = 2000000;
-	size_t exist_num = 1000000;
+	size_t item_num  = 20000000;
+	size_t exist_num = 100000000;
 	size_t runtime = 10;
 	size_t thread_num = 1;
 	size_t benchmark = 0;  

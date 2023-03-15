@@ -25,7 +25,8 @@ void *run_fg(void *param);
 void prepare(aidel_type *&ai);
 
 int main(int argc, char **argv) {
-    
+   clock_t s,e;
+    s=clock(); 
 
     parse_args(argc, argv);
     load_data();
@@ -35,7 +36,11 @@ int main(int argc, char **argv) {
     ai->self_check();
     if(ai!=nullptr) delete ai;
     
+e=clock();
 
+    double time_taken = double(e - s)/double(CLOCKS_PER_SEC);
+
+    std::cout<<" execution time= "<<time_taken<<std::endl;
     
     
     return 0;

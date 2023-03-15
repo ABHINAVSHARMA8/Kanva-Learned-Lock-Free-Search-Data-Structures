@@ -5,7 +5,7 @@
 #include "util.h"
 #include "aidel_model.h"
 #include "aidel_model_impl.h"
-//#include "piecewise_linear_model.h"
+
 
 namespace aidel {
 
@@ -13,19 +13,19 @@ template<class key_t, class val_t>
 inline AIDEL<key_t, val_t>::AIDEL()
     : maxErr(0), learning_step(10000), learning_rate(0.1)
 {
-    //root = new root_type();
+    
 }
 
 template<class key_t, class val_t>
 inline AIDEL<key_t, val_t>::AIDEL(int _maxErr, int _learning_step, float _learning_rate)
     : maxErr(_maxErr), learning_step(_learning_step), learning_rate(_learning_rate)
 {
-    //root = new root_type();
+    
 }
 
 template<class key_t, class val_t>
 AIDEL<key_t, val_t>::~AIDEL(){
-    //root = nullptr;
+    
 }
 
 // ====================== train models ========================
@@ -40,7 +40,7 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
     size_t start = 0;
     size_t end = learning_step<keys.size()?learning_step:keys.size();
     while(start<end){
-        //COUT_THIS("start:" << start<<" ,end: "<<end);
+        
         plexmodel_type model;
         model.train(keys.begin()+start, end-start);
         size_t err = model.get_maxErr();
@@ -52,16 +52,16 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
        
     }
 
-    //root = new root_type(model_keys);
+    
     COUT_THIS("[aidle] get models -> "<< model_keys.size());
     assert(model_keys.size()==aimodels.size());
 
-    key_t min = keys.front();
-    key_t max = keys.back();
-    const unsigned numBins = 128; // each node will have 64 separate bins
-    const unsigned maxError = 4; // the error of the index
-    cht::Builder<key_t> chtb(min, max, numBins, maxError, false,false);
-    for (const auto& key2 : keys) chtb.AddKey(key2);
+    key_t min1 = model_keys.front();
+    key_t max1 = model_keys.back();
+    const unsigned numBins = 128; // each node will have 128 separate bins
+    const unsigned maxError = 1; // the error of the index
+    cht::Builder<key_t> chtb(min1, max1, numBins, maxError, false,false);
+    for (const auto& key2 : model_keys) chtb.AddKey(key2);
     cht = chtb.Finalize();
 
     /*uint64_t min = model_keys.front();
@@ -97,26 +97,33 @@ typename AIDEL<key_t, val_t>::aidelmodel_type* AIDEL<key_t, val_t>::find_model(c
     size_t model_key=key;
     cht::SearchBound bound = cht.GetSearchBound(model_key);
     size_t model_pos=-1;
-    if(model_keys[bound.begin]>model_key) model_pos=bound.begin;
-    for(int i=1;i<=5 && model_pos==-1;i++){
+    
+    for(int i=0;i<=2 && model_pos==-1;i++){
         if(bound.begin+i<model_keys.size()){
-            if(model_keys[bound.begin+i]>model_key) model_pos=bound.begin+i;
+            if(model_keys[bound.begin+i]>=model_key) model_pos=bound.begin+i;
         }
     }
-    /*double model_key=key;size_t model_pos=-1;
+    /*auto start = std::begin(model_keys) + bound.begin,last = std::begin(model_keys) + bound.end;
+     model_pos = std::lower_bound(start, last, model_key) - std::begin(model_keys);*/
+    
+    /*size_t model_pos=-1;
     ts::SearchBound bound = ts.GetSearchBound(model_key);
+    
     if(model_keys[bound.begin]>=model_key) model_pos=bound.begin;
-    if(model_pos==-1 && model_keys[bound.begin+1]==model_key) model_pos= bound.begin+1;
+    if(model_pos==-1 && model_keys[bound.begin+1]>=model_key) model_pos= bound.begin+1;
     if(model_pos==-1 && bound.begin+2<model_keys.size()){
      if(model_keys[bound.begin+2]>=model_key) model_pos= bound.begin+2;
     }*/
     
     
-    /*size_t model_pos=-1;
+    
+   /* size_t model_pos=-1;
     for(int i=0;i<model_keys.size() && model_pos==-1;i++) {
         if(model_keys[i]>=key) model_pos=i;
     }*/
+    
     //size_t model_pos = binary_search_branchless(&model_keys[0], model_keys.size(), key);
+    //std::cout<<model_pos2<<" "<<model_pos<<std::endl;
 
   if(model_pos >= aimodels.size())
         model_pos = aimodels.size()-1;
