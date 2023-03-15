@@ -8,4 +8,4 @@ To run:
 
 TODO:
 
-1. Line 48 of aidel_impl.h
+1. Throughput of insert is better,read slightly lagging
