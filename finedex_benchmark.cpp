@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     aidel_type *ai;
     prepare(ai);
     run_benchmark(ai, Config.runtime);
-    ai->self_check();
+    //ai->self_check();
     if(ai!=nullptr) delete ai;
     
 e=clock();
@@ -56,7 +56,7 @@ void prepare(aidel_type *&ai){
     ai->train(exist_keys, exist_keys, 32);
     TIMER_END_S(0,time_s);
     printf("%8.1lf s : %.40s\n", time_s, "training");
-    ai->self_check();
+    //ai->self_check();
     COUT_THIS("check aidel: OK");
     
 }

@@ -125,7 +125,8 @@ inline result_t FINEdex<key_t, val_t>::find(const key_t &key, val_t &val)
         model_pos = aimodels.size()-1;
     return aimodels[model_pos].con_find(key, val);*/
 
-    return find_model(key)[0].con_find_retrain(key, val);
+    //return find_model(key)[0].con_find_retrain(key, val);
+    return find_model(key)[0].find_retrain(key, val);
 
 }
 
