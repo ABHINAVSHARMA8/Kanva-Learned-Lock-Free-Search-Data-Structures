@@ -14,17 +14,18 @@ namespace aidel
         maxErr = 64;
         err = 0;
         keys = nullptr;
-        levelbins = nullptr;
         capacity = 0;
     }
 
     template <class key_t, class val_t>
     AidelModel<key_t, val_t>::~AidelModel()
     {
-        if (model)
-            model = nullptr;
-        if (levelbins)
-            levelbins = nullptr;
+        model = nullptr;
+        for (int i = 0; i < capacity; i++)
+        {
+            mobs_lf[i] = nullptr;
+        }
+        mobs_lf = nullptr;
     }
 
     template <class key_t, class val_t>
@@ -68,13 +69,24 @@ namespace aidel
     template <class key_t, class val_t>
     void AidelModel<key_t, val_t>::print_keys()
     {
-        if (levelbins[0])
-            levelbins[0]->print(std::cout);
+        if (mobs_lf[0])
+        {
+            if (mobs_lf[0]->isbin)
+                mobs_lf[0]->mob.lb->print(std::cout);
+            else
+                mobs_lf[0]->mob.ai->print_keys();
+        }
+
         for (size_t i = 0; i < capacity; i++)
         {
             std::cout << "keys[" << i << "]: " << keys[i] << std::endl;
-            if (levelbins[i + 1])
-                levelbins[i + 1]->print(std::cout);
+            if (mobs_lf[i + 1])
+            {
+                if (mobs_lf[i + 1]->isbin)
+                    mobs_lf[i + 1]->mob.lb->print(std::cout);
+                else
+                    mobs_lf[i + 1]->mob.ai->print_keys();
+            }
         }
     }
 
@@ -110,21 +122,7 @@ namespace aidel
             }
         }
     }
-#if 0
-    template <class key_t, class val_t>
-    void AidelModel<key_t, val_t>::self_check()
-    {
-        NOT_IMPLEMENTED;
-#if 0
-    if(levelbins[0]) levelbins[0]->self_check();
-    for(size_t i=1; i<capacity; i++){
-        assert(keys[i]>keys[i-1]);
-        if(levelbins[i]) levelbins[i]->self_check();
-    }
-    if(levelbins[capacity]) levelbins[capacity]->self_check();
-#endif
-    }
-#endif
+
     template <class key_t, class val_t>
     void AidelModel<key_t, val_t>::self_check_retrain()
     {
@@ -134,7 +132,7 @@ namespace aidel
         }
         for (size_t i = 0; i <= capacity; i++)
         {
-            model_or_bin_t *mob = mobs[i];
+            model_or_bin_t *mob = mobs_lf[i];
             if (mob)
             {
                 if (mob->isbin)
@@ -171,91 +169,6 @@ namespace aidel
         else
             return mob->mob.ai->find_retrain(key, val);
     }
-
-    template <class key_t, class val_t>
-    bool AidelModel<key_t, val_t>::find(const key_t &key, val_t &val)
-    {
-        NOT_IMPLEMENTED;
-#if 0
-    size_t pos = predict(key);
-    //pos = find_lower(key, pos);
-    //pos = locate_in_levelbin(key, pos);
-    if(key == keys[pos]){
-        if(valid_flag[pos]){
-            val = vals[pos];
-            return true;
-        }
-        return false; 
-    }
-    int bin_pos = key<keys[pos]?pos:(pos+1);
-    if(levelbins[bin_pos]==nullptr) return false; 
-    typename levelbin_type::iterator it = levelbins[bin_pos]->find(key);
-    if(it!=levelbins[bin_pos]->end()){
-        val = it.data();
-        return true;
-    }
-    return false;
-#endif
-    }
-
-    template <class key_t, class val_t>
-    bool AidelModel<key_t, val_t>::con_find(const key_t &key, val_t &val)
-    {
-        NOT_IMPLEMENTED;
-#if 0
-    size_t pos = predict(key);
-    //pos = find_lower(key, pos);
-   // pos = locate_in_levelbin(key, pos);
-    if(key == keys[pos]){
-        if(valid_flag[pos]){
-            val = vals[pos];
-            return true;
-        }
-        return false;
-    }
-    int bin_pos = key<keys[pos]?pos:(pos+1);
-    if(levelbins[bin_pos]==nullptr) return false;
-    return levelbins[bin_pos]->con_find(key, val);
-#endif
-    }
-
-#if 0
-    template <class key_t, class val_t>
-    result_t AidelModel<key_t, val_t>::con_find_retrain(const key_t &key, val_t &val)
-    {
-        NOT_IMPLEMENTED;
-    size_t pos = predict(key);
-   // pos = locate_in_levelbin(key, pos);
-    if(key == keys[pos]){
-        if(valid_flag[pos]){
-            val = vals[pos];
-            return result_t::ok;
-        }
-        return result_t::failed;
-    }
-    int bin_pos = key<keys[pos]?pos:(pos+1);
-    memory_fence();
-    model_or_bin_t* mob = mobs[bin_pos];
-    if(mob==nullptr) return result_t::failed;
-    
-    result_t res = result_t::failed;
-    mob->lock();
-    if(mob->isbin){
-        res = mob->mob.lb->con_find_retrain(key, val);
-        /*while(res == result_t::retrain) {
-            while(mob->locked == 1)
-                ;
-            res = mob->mob.lb->con_find_retrain(key, val);
-        }
-        return res;*/
-    } else{
-        res = mob->mob.ai->con_find_retrain(key, val);
-    }
-    assert(res!=result_t::retrain);
-    mob->unlock();
-    return res;
-    }
-#endif
 
     template <class key_t, class val_t>
     inline size_t AidelModel<key_t, val_t>::predict(const key_t &key)
@@ -305,99 +218,9 @@ namespace aidel
     result_t AidelModel<key_t, val_t>::update(const key_t &key, const val_t &val)
     {
         NOT_IMPLEMENTED;
-#if 0
-    size_t pos = predict(key);
-   // pos = locate_in_levelbin(key, pos);
-    if(key == keys[pos]){
-        if(valid_flag[pos]){
-            vals[pos] = val;
-            return result_t::ok;
-        }
-        return result_t::failed;
-    }
-    int bin_pos = key<keys[pos]?pos:(pos+1);
-    memory_fence();
-    model_or_bin_t* mob = mobs[bin_pos];
-    if(mob==nullptr) return result_t::failed;
-    
-    result_t res = result_t::failed;
-    mob->lock();
-    if(mob->isbin){
-        res = mob->mob.lb->update(key, val);
-        /*while(res == result_t::retrain) {
-            while(mob->locked == 1)
-                ;
-            res = mob->mob.lb->update(key, val);
-        }
-        return res;*/
-    } else{
-        res = mob->mob.ai->update(key, val);
-    }
-    assert(res!=result_t::retrain);
-    mob->unlock();
-    return res;
-#endif
     }
 
     // =============================== insert =======================
-    template <class key_t, class val_t>
-    inline bool AidelModel<key_t, val_t>::con_insert(const key_t &key, const val_t &val)
-    {
-        NOT_IMPLEMENTED;
-#if 0
-    size_t pos = predict(key);
-   // pos = locate_in_levelbin(key, pos);
-
-    if(key == keys[pos]){
-        if(valid_flag[pos]){
-            return false;
-        } else{
-            valid_flag[pos] = true;
-            vals[pos] = val;
-            return true;
-        }
-    }
-    int bin_pos = pos;
-    bin_pos = key<keys[bin_pos]?bin_pos:(bin_pos+1);
-    if(!levelbins[bin_pos]) {
-        levelbin_type *lb = new levelbin_type();
-        memory_fence();
-        if(levelbins[bin_pos]) {
-            delete lb;
-            return levelbins[bin_pos]->con_insert(key, val);
-        }
-        levelbins[bin_pos] = lb;
-    }
-    assert(levelbins[bin_pos]!=nullptr);   
-    return levelbins[bin_pos]->con_insert(key, val);
-#endif
-    }
-
-#if 0
-    template <class key_t, class val_t>
-    result_t AidelModel<key_t, val_t>::con_insert_retrain(const key_t &key, const val_t &val)
-    {
-        NOT_IMPLEMENTED;
-    size_t pos = predict(key);
-    //size_t pos = locate_in_levelbin(key, pos1);
-    //std::cout<<"insert "<<key<<" "<<keys[pos]<<std::endl;
-   // std::cout<<pos-pos1<<std::endl;
-   //std::cout<<key<<" "<<keys[pos]<<std::endl;
-    if(key == keys[pos]){
-        if(valid_flag[pos]){
-            return result_t::failed;
-        } else{
-            valid_flag[pos] = true;
-            vals[pos] = val;
-            return result_t::ok;
-        }
-    }
-    int bin_pos = pos;
-    bin_pos = key<keys[bin_pos]?bin_pos:(bin_pos+1);
-    return insert_model_or_bin(key, val, bin_pos);
-    }
-#endif
-
     template <class key_t, class val_t>
     bool AidelModel<key_t, val_t>::insert_retrain(const key_t &key, const val_t &val)
     {
@@ -416,58 +239,6 @@ namespace aidel
         bin_pos = key < keys[bin_pos] ? bin_pos : (bin_pos + 1);
         return insert_model_or_bin(key, val, bin_pos);
     }
-
-#if 0
-template<class key_t, class val_t>
-result_t AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos)
-{
-    // insert bin or model
-    model_or_bin_t *mob = mobs[bin_pos];
-    if(mob==nullptr){
-        mob = new model_or_bin_t();
-        mob->lock();
-        mob->mob.lb = new levelbin_type();
-        mob->isbin = true;
-        memory_fence();
-        if(mobs[bin_pos]){
-            delete mob;
-            return insert_model_or_bin(key, val, bin_pos);
-        }
-        mobs[bin_pos] = mob;
-    } else{
-        mob->lock();
-    }
-    assert(mob!=nullptr);
-    assert(mob->locked == 1);
-    result_t res = result_t::failed;
-    if(mob->isbin) {           // insert into bin
-        res = mob->mob.lb->con_insert_retrain(key, val);
-        if(res == result_t::retrain){
-            //COUT_THIS("[aimodel] Need Retrain: " << key);
-            // resort the data and train the model
-            std::vector<key_t> retrain_keys;
-            std::vector<val_t> retrain_vals;
-            mob->mob.lb->resort(retrain_keys, retrain_vals);
-            plexmodel_type model;
-            model.train(retrain_keys.begin(), retrain_keys.size());
-            size_t err = model.get_maxErr();
-            aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), err);
-            
-            memory_fence();
-            delete mob->mob.lb;
-            mob->mob.ai = ai;
-            mob->isbin = false;
-            res = ai->con_insert_retrain(key, val);
-            mob->unlock();
-            return res;
-        }
-    } else{                   // insert into model
-        res = mob->mob.ai->con_insert_retrain(key, val);
-    }
-    mob->unlock();
-    return res;
-}
-#endif
 
     template <class key_t, class val_t>
     bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos)
@@ -532,7 +303,7 @@ result_t AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const v
     template <class key_t, class val_t>
     bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int bin_pos)
     {
-        // TODO(Abhinav) : Check this 
+        // TODO(Abhinav) : Check this
     retry:
         model_or_bin_t *mob = mobs_lf[bin_pos];
         if (mob == nullptr)
@@ -570,60 +341,6 @@ result_t AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const v
         }
         return false;
     }
-
-    // ========================== scan ===================
-    #if 0
-    template <class key_t, class val_t>
-    int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result)
-    {
-        size_t remaining = n;
-
-        size_t pos = predict(key);
-        // pos = locate_in_levelbin(key, pos);
-        while (remaining > 0 && pos <= capacity)
-        {
-            if (pos < capacity && keys[pos] >= key)
-            {
-                result.push_back(std::pair<key_t, val_t>(keys[pos], vals[pos]));
-                remaining--;
-                if (remaining <= 0)
-                    break;
-            }
-            if (mobs[pos] != nullptr)
-            {
-                model_or_bin_t *mob = mobs[pos];
-                if (mob->isbin)
-                {
-                    remaining = mob->mob.lb->scan(key, remaining, result);
-                }
-                else
-                {
-                    remaining = mob->mob.ai->scan(key, remaining, result);
-                }
-            }
-            pos++;
-        }
-        return remaining;
-    }
-
-    // ======================== resort data for retraining ===================
-    template <class key_t, class val_t>
-    void AidelModel<key_t, val_t>::resort(std::vector<key_t> &keys, std::vector<val_t> &vals)
-    {
-        typename levelbin_type::iterator it;
-        for (size_t i = 0; i <= capacity; i++)
-        {
-            if (levelbins[i])
-            {
-                for (it = levelbins[i]->begin(); it != levelbins[i]->end(); it++)
-                {
-                    keys.push_back(it.key());
-                    vals.push_back(it.data());
-                }
-            }
-        }
-    }
-#endif
 } // namespace aidel
 
 #endif
