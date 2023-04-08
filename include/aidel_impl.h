@@ -161,7 +161,7 @@ inline result_t AIDEL<key_t, val_t>::find(const key_t &key, val_t &val)
 {   
     
 
-    return find_model(key)[0].con_find_retrain(key, val);
+    rreturn find_model(key)[0].find_retrain(key, val) ? result_t::ok : result_t::failed;
 
 }
 
@@ -169,7 +169,7 @@ inline result_t AIDEL<key_t, val_t>::find(const key_t &key, val_t &val)
 // =================  scan ====================
 template<class key_t, class val_t>
 int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result)
-{
+{   /*
     size_t remaining = n;
     size_t model_pos = binary_search_branchless(&model_keys[0], model_keys.size(), key);
     if(model_pos >= aimodels.size())
@@ -177,7 +177,8 @@ int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std:
     while(remaining>0 && model_pos < aimodels.size()){
         remaining = aimodels[model_pos].scan(key, remaining, result);
     }
-    return remaining;
+    return remaining;*/
+    //TODO:Range Query
 }
 
 
@@ -187,7 +188,7 @@ template<class key_t, class val_t>
 inline result_t AIDEL<key_t, val_t>::insert(
         const key_t& key, const val_t& val)
 {
-    return find_model(key)[0].con_insert_retrain(key, val);
+    return find_model(key)[0].insert_retrain(key, val) ? result_t::ok : result_t::failed;
     //return find_model(key)[0].con_insert(key, val);
 }
 
@@ -206,7 +207,7 @@ inline result_t AIDEL<key_t, val_t>::update(
 template<class key_t, class val_t>
 inline result_t AIDEL<key_t, val_t>::remove(const key_t& key)
 {
-    return find_model(key)[0].remove(key);
+    return find_model(key)[0].remove(key) ? result_t::ok : result_t::failed;
     //return find_model(key)[0].con_insert(key, val);
 }
 

@@ -23,6 +23,7 @@ public:
     int64_t count();
     void mark();
     int insert(K Key, V value);
+    int remove(K key);
     bool insert(K Key, V value, ll_Node<K,V>* new_node);
     int insert(K Key, V value, int tid, int phase);
     bool search(K key);
@@ -221,10 +222,15 @@ int Linked_List<K,V>::insert(K key, V value) {
                 return 1;
             }
             FAILURE++;
-            if(FAILURE >= MAX_FAILURE)
+            if(FAILURE >= MAX_FAILURE) //CHECK:include size in insert
                 return -1;
         }
     }
+}
+
+template<typename K, typename V>
+int Linked_List<K,V>::remove(K key, V value) {
+    return insert(K,-1);
 }
 
 template<typename K, typename V>
