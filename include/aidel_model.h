@@ -3,8 +3,9 @@
 
 #include "plex_model.h"
 #include "plex_model_impl.h"
-#include "level_bin_con.h"
+//#include "level_bin_con.h"
 #include "util.h"
+#include "Uruv/LF_LL.h";
 
 namespace aidel{
 
@@ -12,27 +13,20 @@ template<class key_t, class val_t>
 class AidelModel {
 public:
     typedef PlexModel<key_t> plexmodel_type;
-    typedef aidel::LevelBinCon<key_t, val_t> levelbin_type;
+    //typedef aidel::LevelBinCon<key_t, val_t> levelbin_type;
     typedef aidel::AidelModel<key_t, val_t> aidelmodel_type;
 
     typedef struct model_or_bin {
         typedef union pointer{
-            levelbin_type* lb;
+            //levelbin_type* lb;
+            Linked_List<key_t,val_t> *vll;//versioned linked list
             aidelmodel_type* ai;
         }pointer_t;
         pointer_t mob;
         bool volatile isbin = true;   // true = lb, false = ai
         volatile uint8_t locked = 0;
 
-        void lock(){
-            uint8_t unlocked = 0, locked = 1;
-            while (unlikely(cmpxchgb((uint8_t *)&this->locked, unlocked, locked) !=
-                            unlocked))
-              ;
-        }
-        void unlock(){
-            locked = 0;
-        }
+        
     }model_or_bin_t;
 
 public:
