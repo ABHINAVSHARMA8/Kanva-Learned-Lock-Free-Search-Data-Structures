@@ -146,7 +146,7 @@ void *run_fg(void *param) {
             key_type dummy_key = exist_keys[query_i % exist_keys.size()];
             res = ai->find(dummy_key, dummy_value);
             result.clear();
-            int n = ai->scan(dummy_key, 10, result);
+            int n = ai->scan(dummy_key, 1000, result);
             std::cout<<n<<" "<<result.size()<<std::endl;
             query_i++;
             if (unlikely(query_i == exist_keys.size())) {
