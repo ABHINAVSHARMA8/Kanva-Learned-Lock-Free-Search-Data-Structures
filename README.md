@@ -12,7 +12,5 @@ Notes:
 TODO:
 
 1. Throughput of insert is better,read slightly lagging
-2.check for threshold in insert in aidel_model_impl.h
-3.Check remove_model_or_bin in aidel_model_impl.h
-4.Range queries in aidel_model_impl.h
-5.Range query in aidel_impl.h
+2.Check for insert()
+3.inhibit tombstone deletes while range search in active
