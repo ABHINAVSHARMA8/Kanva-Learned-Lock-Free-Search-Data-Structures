@@ -11,4 +11,4 @@ Notes:
 
 TODO:
 
-1. Throughput of insert is better,read slightly lagging
+1. Put switch for CHT
