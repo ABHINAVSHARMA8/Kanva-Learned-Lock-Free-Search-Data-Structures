@@ -436,7 +436,7 @@ bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int b
                 return false;*/
             if (res == -2)
             {
-                std::vector<key_t> retrain_keys;
+                /*std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
                 mob->mob.lflb->collect(&retrain_keys,&retrain_vals,(version_tracker)->get_latest_timestamp());
                 lrmodel_type model;
@@ -451,6 +451,7 @@ bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int b
                     goto retry;
                 }
                 return ai->remove(key,version_tracker);
+                */
             }
             else
                 return  (res>=0);//res==0 || res==1
