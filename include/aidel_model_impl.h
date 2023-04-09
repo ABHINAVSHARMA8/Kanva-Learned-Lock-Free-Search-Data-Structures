@@ -152,6 +152,7 @@ bool AidelModel<key_t, val_t>::find_retrain(const key_t &key, val_t &val)
     //pos = find_lower(key, pos);
     pos = locate_in_levelbin(key, pos);
     if(key == keys[pos]){
+         
         if(valid_flag[pos]){
             val = vals[pos];
             return true;
@@ -161,11 +162,14 @@ bool AidelModel<key_t, val_t>::find_retrain(const key_t &key, val_t &val)
     int bin_pos = key<keys[pos]?pos:(pos+1);
     model_or_bin_t *mob;
     mob = mobs_lf[bin_pos].load(std::memory_order_seq_cst);
-
+   
+    
         if (mob == nullptr)
-            return -1;
-        if (mob->isbin)
+            return false;
+        if (mob->isbin){
+            
             return mob->mob.lflb->search(key,val);//CHECK
+        }
         else
             return mob->mob.ai->find_retrain(key, val);
 }
@@ -354,6 +358,7 @@ template<class key_t, class val_t>
 bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos,TrackerList *version_tracker)
 {
     // insert bin or model
+   
     model_or_bin_t *mob = mobs_lf[bin_pos];
     
     retry:
@@ -374,12 +379,13 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
             {
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
-                mob->mob.lflb->collect(&retrain_keys,&retrain_vals,(version_tracker)->get_latest_timestamp());
+                mob->mob.lflb->collect(&retrain_keys,&retrain_vals);
                 lrmodel_type model;
-                
-                model.train(retrain_keys.begin(), retrain_keys.size());
+               
+                model.train(retrain_keys.begin(), retrain_vals.size());
                 //std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
                 size_t err = model.get_maxErr();
+                //std::cout<<"Error is "<<retrain_keys.size()<<" "<<retrain_vals.size()<<std::endl;
                 aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), err);
                 model_or_bin_t *new_mob = new model_or_bin_t();
                 new_mob->mob.ai = ai;
@@ -389,6 +395,7 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
                     goto retry;
                 }
                 return ai->insert_retrain(key, val,version_tracker);
+                
                 //return (res==1 || res==0);
             }
 

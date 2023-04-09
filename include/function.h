@@ -32,7 +32,7 @@ typedef struct operation_item {
 
 // parameters
 struct config{
-	double read_ratio = 0;
+	double read_ratio =0;
 	double insert_ratio = 1;
 	double update_ratio = 0;
 	double delete_ratio = 0;

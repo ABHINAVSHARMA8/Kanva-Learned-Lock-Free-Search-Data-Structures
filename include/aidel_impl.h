@@ -140,6 +140,7 @@ void AIDEL<key_t, val_t>::append_model(lrmodel_type &model,
 template<class key_t, class val_t>
 typename AIDEL<key_t, val_t>::aidelmodel_type* AIDEL<key_t, val_t>::find_model(const key_t &key)
 {   //CHECK :add switch for biary search branchless
+    
     size_t model_key=key;
     cht::SearchBound bound = cht.GetSearchBound(model_key);
     size_t model_pos=-1;
