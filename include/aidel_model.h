@@ -8,6 +8,7 @@
 #include "util.h"
 #include "Uruv/LF_LL.h"
 #include "Uruv/VersionTracker/TrackerList.h"
+#include<atomic>
 
 
 namespace aidel{
@@ -47,7 +48,7 @@ public:
     result_t update(const key_t &key, const val_t &val); //NOT IMPLEMENTED
     //inline bool con_insert(const key_t &key, const val_t &val);
     //result_t con_insert_retrain(const key_t &key, const val_t &val);
-    bool remove(const key_t &key,TrackerList *version_tracker);
+    bool remove(const key_t &key,TrackerList *version_tracker,bool range_query);
     bool find_retrain(const key_t &key, val_t &val);
     int scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result,TrackerList *version_tracker,int ts);
     bool insert_retrain(const key_t &key, const val_t &val,TrackerList *version_tracker);//-1 for fail

@@ -4,6 +4,7 @@
 #include "aidel_model.h"
 #include "util.h"
 
+
 namespace aidel{
 
 template<class key_t, class val_t>
@@ -406,11 +407,12 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
 
 // ========================== remove =====================
 template<class key_t, class val_t>
-bool AidelModel<key_t, val_t>::remove(const key_t &key,TrackerList *version_tracker)
+bool AidelModel<key_t, val_t>::remove(const key_t &key,TrackerList *version_tracker,bool range_query)
 {
     size_t pos = predict(key);
     pos = locate_in_levelbin(key, pos);
     if(key == keys[pos]){
+        if(range_query) return false;// range query(ies) is/are going on
         if(valid_flag[pos]){
             valid_flag[pos] = false;
             return true;
