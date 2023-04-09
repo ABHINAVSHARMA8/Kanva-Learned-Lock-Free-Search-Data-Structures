@@ -12,5 +12,4 @@ Notes:
 TODO:
 
 1. Throughput of insert is better,read slightly lagging
-2.Check for insert()
-3.inhibit tombstone deletes while range search in active
+2.Check for insert() - malloc.c not found?s

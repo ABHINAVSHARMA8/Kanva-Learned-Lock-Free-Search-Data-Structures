@@ -420,11 +420,11 @@ bool AidelModel<key_t, val_t>::remove(const key_t &key,TrackerList *version_trac
         return false;;//CHECK
     }
     int bin_pos = key<keys[pos]?pos:(pos+1);
-    return remove_model_or_bin(key, bin_pos,version_tracker);
+    return remove_model_or_bin(key, bin_pos,version_tracker,range_query);
 }
 
 template<class key_t, class val_t>
-bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int bin_pos,TrackerList *version_tracker)
+bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int bin_pos,TrackerList *version_tracker,bool range_query)
 {   
    retry:
         model_or_bin_t *mob = mobs_lf[bin_pos];
@@ -460,7 +460,7 @@ bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int b
         }
         else
         {
-            return mob->mob.ai->remove(key,version_tracker);
+            return mob->mob.ai->remove(key,version_tracker,range_query);
         }
         return false;
     

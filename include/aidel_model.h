@@ -9,6 +9,7 @@
 #include "Uruv/LF_LL.h"
 #include "Uruv/VersionTracker/TrackerList.h"
 #include<atomic>
+#include <stdlib.h>
 
 
 namespace aidel{
@@ -63,7 +64,7 @@ private:
     //inline size_t find_lower_avx(const int *arr, int n, int key);
     //inline size_t find_lower_avx(const int64_t *arr, int n, int64_t key);
     bool insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos,TrackerList *version_tracker);
-    bool remove_model_or_bin(const key_t &key, const int bin_pos,TrackerList *version_tracker);
+    bool remove_model_or_bin(const key_t &key, const int bin_pos,TrackerList *version_tracker,bool range_query);
 
 
 private:
