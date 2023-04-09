@@ -5,13 +5,13 @@
 #include "util.h"
 #include "aidel_model.h"
 #include "aidel_model_impl.h"
-
+#include "piecewise_linear_model.h"
 
 namespace aidel {
 
 template<class key_t, class val_t>
 inline AIDEL<key_t, val_t>::AIDEL()
-    : maxErr(0), learning_step(10000), learning_rate(0.1)
+    : maxErr(64), learning_step(1000), learning_rate(0.1)
 {
     
 }
@@ -41,10 +41,25 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
     size_t end = learning_step<keys.size()?learning_step:keys.size();
     while(start<end){
         
-        plexmodel_type model;
+        lrmodel_type model;
         model.train(keys.begin()+start, end-start);
         size_t err = model.get_maxErr();
-        append_model(model,keys.begin()+start, vals.begin()+start, end-start, err);
+        if(err == maxErr) {
+            append_model(model, keys.begin()+start, vals.begin()+start, end-start, err);
+        }else if(err < maxErr) {
+            if(end>=keys.size()){
+                append_model(model, keys.begin()+start, vals.begin()+start, end-start, err);
+                break;
+            }
+            end += learning_step;
+            if(end>keys.size()){
+                end = keys.size();
+            }
+            continue;
+        } else {
+            size_t offset = backward_train(keys.begin()+start, vals.begin()+start, end-start, int(learning_step*learning_rate));
+			end = start + offset;
+        }
         start = end;
         end += learning_step;
         if(end>=keys.size())
@@ -55,34 +70,64 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
     
     COUT_THIS("[aidle] get models -> "<< model_keys.size());
     assert(model_keys.size()==aimodels.size());
-
+    //std::cout<<"CHT"<<std::endl;
     key_t min1 = model_keys.front();
     key_t max1 = model_keys.back();
     const unsigned numBins = 128; // each node will have 128 separate bins
-    const unsigned maxError = 1; // the error of the index
-    cht::Builder<key_t> chtb(min1, max1, numBins, maxError, false,false);
+    const unsigned chtmaxError = 1; // the error of the index
+    cht::Builder<key_t> chtb(min1, max1, numBins, chtmaxError, false,false);
     for (const auto& key2 : model_keys) chtb.AddKey(key2);
     cht = chtb.Finalize();
 
-    /*uint64_t min = model_keys.front();
-    uint64_t max = model_keys.back();
-    ts::Builder<uint64_t> tsb(min, max,0);//CHANGE
-
-    for (const auto& key2 : model_keys) tsb.AddKey(key2);
-    ts = tsb.Finalize();*/
+    
 
 }
 
+template<class key_t, class val_t>
+size_t AIDEL<key_t, val_t>::backward_train(const typename std::vector<key_t>::const_iterator &keys_begin, 
+                                           const typename std::vector<val_t>::const_iterator &vals_begin,
+                                           uint32_t size, int step)
+{   
+    if(size<=10){
+        step = 1;
+    } else {
+        while(size<=step){
+            step = int(step*learning_rate);
+        }
+    }
+    assert(step>0);
+    size_t start = 0;
+    size_t end = size-step;
+    while(end>0){
+        lrmodel_type model;
+        model.train(keys_begin, end);
+        size_t err = model.get_maxErr();
+        if(err<=maxErr){
+            append_model(model, keys_begin, vals_begin, end, err);
+            return end;
+        }
+        end -= step;
+    }
+    end = backward_train(keys_begin, vals_begin, end, int(step*learning_rate));
+	return end;
+}
 
 
 template<class key_t, class val_t>
-void AIDEL<key_t, val_t>::append_model(plexmodel_type &model, 
+void AIDEL<key_t, val_t>::append_model(lrmodel_type &model, 
                                        const typename std::vector<key_t>::const_iterator &keys_begin, 
                                        const typename std::vector<val_t>::const_iterator &vals_begin, 
                                        size_t size, int err)
 {
-    key_t key = *(keys_begin+size-1); //last element
-
+    key_t key = *(keys_begin+size-1);
+    
+    // set learning_step
+    int n = size/10;
+    learning_step = 1;
+    while(n!=0){
+        n/=10;
+        learning_step*=10;
+    }
      
     assert(err<=maxErr);
     aidelmodel_type aimodel(model, keys_begin, vals_begin, size, maxErr);
@@ -93,7 +138,7 @@ void AIDEL<key_t, val_t>::append_model(plexmodel_type &model,
 
 template<class key_t, class val_t>
 typename AIDEL<key_t, val_t>::aidelmodel_type* AIDEL<key_t, val_t>::find_model(const key_t &key)
-{
+{   //CHECK :add switch for biary search branchless
     size_t model_key=key;
     cht::SearchBound bound = cht.GetSearchBound(model_key);
     size_t model_pos=-1;
@@ -103,25 +148,8 @@ typename AIDEL<key_t, val_t>::aidelmodel_type* AIDEL<key_t, val_t>::find_model(c
             if(model_keys[bound.begin+i]>=model_key) model_pos=bound.begin+i;
         }
     }
-    /*auto start = std::begin(model_keys) + bound.begin,last = std::begin(model_keys) + bound.end;
-     model_pos = std::lower_bound(start, last, model_key) - std::begin(model_keys);*/
-    
-    /*size_t model_pos=-1;
-    ts::SearchBound bound = ts.GetSearchBound(model_key);
-    
-    if(model_keys[bound.begin]>=model_key) model_pos=bound.begin;
-    if(model_pos==-1 && model_keys[bound.begin+1]>=model_key) model_pos= bound.begin+1;
-    if(model_pos==-1 && bound.begin+2<model_keys.size()){
-     if(model_keys[bound.begin+2]>=model_key) model_pos= bound.begin+2;
-    }*/
-    
-    
-    
-   /* size_t model_pos=-1;
-    for(int i=0;i<model_keys.size() && model_pos==-1;i++) {
-        if(model_keys[i]>=key) model_pos=i;
-    }*/
-    
+   
+ 
     //size_t model_pos = binary_search_branchless(&model_keys[0], model_keys.size(), key);
     //std::cout<<model_pos2<<" "<<model_pos<<std::endl;
 
@@ -213,7 +241,7 @@ inline result_t AIDEL<key_t, val_t>::remove(const key_t& key)
 }
 
 // ========================== using OptimalLPR train the model ==========================
-/*template<class key_t, class val_t>
+template<class key_t, class val_t>
 void AIDEL<key_t, val_t>::train_opt(const std::vector<key_t> &keys, 
                                     const std::vector<val_t> &vals, size_t _maxErr)
 {
@@ -227,12 +255,12 @@ void AIDEL<key_t, val_t>::train_opt(const std::vector<key_t> &keys,
     COUT_THIS("[aidle] get models -> "<< segments.size());
 
    
-}*/
+}
 
-/*template<class key_t, class val_t>
+template<class key_t, class val_t>
 size_t AIDEL<key_t, val_t>::model_size(){
     return segments.size();
-}*/
+}
 
 
 

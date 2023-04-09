@@ -28,12 +28,12 @@ AidelModel<key_t, val_t>::~AidelModel()
 }
 
 template<class key_t, class val_t>
-AidelModel<key_t, val_t>::AidelModel(plexmodel_type &plexmodel, 
+AidelModel<key_t, val_t>::AidelModel(lrmodel_type &lrmodel, 
                                      const typename std::vector<key_t>::const_iterator &keys_begin, 
                                      const typename std::vector<val_t>::const_iterator &vals_begin, 
                                      size_t size, size_t _maxErr) : maxErr(_maxErr), capacity(size)
 {
-    model=new plexmodel_type(plexmodel.get_vec(),plexmodel.get_ts());
+    model=new lrmodel_type(lrmodel.get_weight0(), lrmodel.get_weight1());
     keys = (key_t *)malloc(sizeof(key_t)*size);
     vals = (val_t *)malloc(sizeof(val_t)*size);
     valid_flag = (bool*)malloc(sizeof(bool)*size);
@@ -309,7 +309,7 @@ template<class key_t, class val_t>
 inline bool AidelModel<key_t, val_t>::insert_retrain(const key_t &key, const val_t &val)
 {
     size_t pos = predict(key);
-    //pos = locate_in_levelbin(key, pos);
+    pos = locate_in_levelbin(key, pos);
     //std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
     if(key == keys[pos]){
         if(valid_flag[pos]){
@@ -374,10 +374,10 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
                 mob->mob.lflb->collect(&retrain_keys,&retrain_vals);
-                plexmodel_type model;
-                std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
-                model.train(retrain_keys.begin(),retrain_keys.size());
+                lrmodel_type model;
                 
+                model.train(retrain_keys.begin(), retrain_keys.size());
+                //std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
                 size_t err = model.get_maxErr();
                 aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), err);
                 model_or_bin_t *new_mob = new model_or_bin_t();
@@ -439,8 +439,8 @@ bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int b
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
                 mob->mob.lflb->collect(&retrain_keys,&retrain_vals);
-                plexmodel_type model;
-                model.train(retrain_keys,retrain_vals);
+                lrmodel_type model;
+                model.train(retrain_keys.begin(), retrain_keys.size());
                 size_t err = model.get_maxErr();
                 aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), err);
                 model_or_bin_t *new_mob = new model_or_bin_t();
