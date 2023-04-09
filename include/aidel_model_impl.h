@@ -119,30 +119,21 @@ void AidelModel<key_t, val_t>::print_model_retrain()
     }
 }
 
-template<class key_t, class val_t>
-void AidelModel<key_t, val_t>::self_check()
-{
-    if(levelbins[0]) levelbins[0]->self_check();
-    for(size_t i=1; i<capacity; i++){
-        assert(keys[i]>keys[i-1]);
-        if(levelbins[i]) levelbins[i]->self_check();
-    }
-    if(levelbins[capacity]) levelbins[capacity]->self_check();
-}
+
 
 template<class key_t, class val_t>
-void AidelModel<key_t, val_t>::self_check_retrain()
+void AidelModel<key_t, val_t>::self_check()
 {
     for(size_t i=1; i<capacity; i++){
         assert(keys[i]>keys[i-1]);
     }
     for(size_t i=0; i<=capacity; i++){
-        model_or_bin_t *mob = mobs[i];
+        model_or_bin_t *mob = mobs_lf[i];//CHECK
         if(mob){
             if(mob->isbin){
                 //mob->mob.lb->self_check();CHECK
             } else {
-                mob->mob.ai->self_check_retrain();
+                mob->mob.ai->self_check();
             }
         }
     }
@@ -307,6 +298,7 @@ result_t AidelModel<key_t, val_t>::update(const key_t &key, const val_t &val)
     assert(res!=result_t::retrain);
     mob->unlock();
     return res;*/
+    return result_t::ok;//CHECK
 }
 
 
@@ -317,8 +309,8 @@ template<class key_t, class val_t>
 inline bool AidelModel<key_t, val_t>::insert_retrain(const key_t &key, const val_t &val)
 {
     size_t pos = predict(key);
-    pos = locate_in_levelbin(key, pos);
-
+    //pos = locate_in_levelbin(key, pos);
+    //std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
     if(key == keys[pos]){
         if(valid_flag[pos]){
             return false;
@@ -328,8 +320,10 @@ inline bool AidelModel<key_t, val_t>::insert_retrain(const key_t &key, const val
             return true;//CHECK
         }
     }
+    //std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
     int bin_pos = pos;
     bin_pos = key<keys[bin_pos]?bin_pos:(bin_pos+1);
+    //std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
     return insert_model_or_bin(key, val, bin_pos);
 }
 
@@ -359,7 +353,8 @@ template<class key_t, class val_t>
 bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos)
 {
     // insert bin or model
-
+    model_or_bin_t *mob = mobs_lf[bin_pos];
+    
     retry:
         if (mob == nullptr)
         {
@@ -378,9 +373,11 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
             {
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
-                mob->mob.lflb->collect(retrain_keys, retrain_vals);
+                mob->mob.lflb->collect(&retrain_keys,&retrain_vals);
                 plexmodel_type model;
-                model.train(retrain_keys.begin(), retrain_keys.size());
+                std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
+                model.train(retrain_keys.begin(),retrain_keys.size());
+                
                 size_t err = model.get_maxErr();
                 aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), err);
                 model_or_bin_t *new_mob = new model_or_bin_t();
@@ -409,23 +406,23 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
 
 // ========================== remove =====================
 template<class key_t, class val_t>
-result_t AidelModel<key_t, val_t>::remove(const key_t &key)
+bool AidelModel<key_t, val_t>::remove(const key_t &key)
 {
     size_t pos = predict(key);
     pos = locate_in_levelbin(key, pos);
     if(key == keys[pos]){
         if(valid_flag[pos]){
             valid_flag[pos] = false;
-            return result_t::ok;
+            return true;
         }
-        return result_t::failed;//CHECK
+        return false;;//CHECK
     }
     int bin_pos = key<keys[pos]?pos:(pos+1);
     return remove_model_or_bin(key, bin_pos);
 }
 
 template<class key_t, class val_t>
-result_t AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int bin_pos)
+bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int bin_pos)
 {   
    retry:
         model_or_bin_t *mob = mobs_lf[bin_pos];
@@ -441,9 +438,9 @@ result_t AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const i
             {
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
-                mob->mob.lflb->collect(retrain_keys, retrain_vals);
+                mob->mob.lflb->collect(&retrain_keys,&retrain_vals);
                 plexmodel_type model;
-                model.train(retrain_keys.begin(), retrain_keys.size());
+                model.train(retrain_keys,retrain_vals);
                 size_t err = model.get_maxErr();
                 aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), err);
                 model_or_bin_t *new_mob = new model_or_bin_t();
@@ -494,7 +491,9 @@ int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector
         pos++;
     }
     return remaining;*/
+    return 0;
     //TODO:Range Query
+
 }
 
 

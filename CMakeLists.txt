@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(Threads REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
 include_directories("include")
 include_directories("/opt/intel/oneapi/mkl/2021.1.1/include")
 

@@ -1,1 +1,1 @@
-/usr/bin/c++  -g -msse -march=core-avx2  -rdynamic CMakeFiles/finedex_benchmark.dir/finedex_benchmark.cpp.o  -o finedex_benchmark  -lpthread 
+/usr/bin/c++  -g -msse -march=core-avx2 -O2 -g -DNDEBUG  -rdynamic CMakeFiles/finedex_benchmark.dir/finedex_benchmark.cpp.o  -o finedex_benchmark  -lpthread 

@@ -161,7 +161,7 @@ inline result_t AIDEL<key_t, val_t>::find(const key_t &key, val_t &val)
 {   
     
 
-    rreturn find_model(key)[0].find_retrain(key, val) ? result_t::ok : result_t::failed;
+    return find_model(key)[0].find_retrain(key, val) ? result_t::ok : result_t::failed;
 
 }
 
@@ -178,6 +178,7 @@ int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std:
         remaining = aimodels[model_pos].scan(key, remaining, result);
     }
     return remaining;*/
+    return 0;
     //TODO:Range Query
 }
 
@@ -197,7 +198,7 @@ inline result_t AIDEL<key_t, val_t>::insert(
 template<class key_t, class val_t>
 inline result_t AIDEL<key_t, val_t>::update(
         const key_t& key, const val_t& val)
-{
+{   //Not used anywhere
     return find_model(key)[0].update(key, val);
     //return find_model(key)[0].con_insert(key, val);
 }

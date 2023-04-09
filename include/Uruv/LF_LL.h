@@ -8,6 +8,7 @@
 #include<vector>
 #include <unordered_set>
 #include <iostream>
+#include <thread>
 #include "util.h"
 std::atomic<int> size(0); //without sentinel
 #define threshhold 100 //random
@@ -28,8 +29,9 @@ public:
     int remove(K key);
     bool insert(K Key, V value, ll_Node<K,V>* new_node);
     int insert(K Key, V value, int tid, int phase);
-    bool search(K key);
+    bool search(K key,V value);
     std::vector<std::pair<K,Vnode<V>*>>* collect(std::vector<std::pair<K,Vnode<V>*>>*, int64_t);
+    void collect(std::vector<K>*,std::vector<V>*);
     void range_query(int64_t low, int64_t high, int64_t curr_ts, std::vector<std::pair<K,V>>& res);
     ll_Node<K,V>* find(K key);
     ll_Node<K,V>* find(K key, ll_Node<K,V>**);
@@ -123,6 +125,21 @@ std::vector<std::pair<K,Vnode<V>*>>* Linked_List<K,V>::collect(std::vector<std::
         left_next = ( ll_Node<K,V>* ) get_unmarked_ref((long) left_next -> next.load(std::memory_order_seq_cst));
     }
     return res;
+}
+template<typename K, typename V>
+void Linked_List<K,V>::collect(std::vector<K> *keys,std::vector<V> *values){
+    ll_Node<K,V>* left_node = ( ll_Node<K,V>* ) get_unmarked_ref((long)head -> next.load(std::memory_order_seq_cst));
+    ll_Node<K,V>* left_next = (ll_Node<K,V>*) get_unmarked_ref((long) left_node -> next.load(std::memory_order_seq_cst));
+    while(left_next){
+        Vnode<V> *left_node_vhead = (Vnode<V>*) get_unmarked_ref((uintptr_t)left_node -> vhead.load(std::memory_order_seq_cst));
+        if(!(left_node_vhead -> value == -1)){
+            
+            (*keys).push_back(left_node->key);
+            (*values).push_back(left_node_vhead->value);
+        }
+        left_node = left_next;
+        left_next = ( ll_Node<K,V>* ) get_unmarked_ref((long) left_next -> next.load(std::memory_order_seq_cst));
+    }
 }
 
 template<typename K, typename V>
@@ -234,8 +251,8 @@ int Linked_List<K,V>::insert(K key, V value) {
 }
 
 template<typename K, typename V>
-int Linked_List<K,V>::remove(K key, V value) {
-    return insert(K,-1);
+int Linked_List<K,V>::remove(K key) {
+    return insert(key,-1);
 }
 
 template<typename K, typename V>
