@@ -1,9 +1,9 @@
 #ifndef __AIDEL_MODEL_H__
 #define __AIDEL_MODEL_H__
 
-#include "plex_model.h"
-#include "plex_model_impl.h"
-//#include "util.h"
+#include "lr_model.h"
+#include "lr_model_impl.h"
+#include "util.h"
 #include "Bin_LL/LF_LL.h"
 
 #define NOT_IMPLEMENTED                                            \
@@ -18,7 +18,7 @@ namespace aidel
     class AidelModel
     {
     public:
-        typedef PlexModel<key_t> plexmodel_type;
+        typedef LinearRegressionModel<key_t> lrmodel_type;
         typedef aidel::AidelModel<key_t, val_t> aidelmodel_type;
 
         typedef struct model_or_bin
@@ -36,7 +36,7 @@ namespace aidel
     public:
         inline AidelModel();
         ~AidelModel();
-        AidelModel(plexmodel_type &plexmodel, const typename std::vector<key_t>::const_iterator &keys_begin,
+        AidelModel(lrmodel_type &lrmodel, const typename std::vector<key_t>::const_iterator &keys_begin,
                    const typename std::vector<val_t>::const_iterator &vals_begin,
                    size_t size, size_t _maxErr);
         inline size_t get_capacity();
@@ -61,7 +61,7 @@ namespace aidel
         bool remove_model_or_bin(const key_t &key, const int bin_pos);
 
     private:
-        plexmodel_type *model = nullptr;
+        lrmodel_type* model = nullptr;
         size_t maxErr = 64;
         size_t err = 0;
         key_t *keys = nullptr;

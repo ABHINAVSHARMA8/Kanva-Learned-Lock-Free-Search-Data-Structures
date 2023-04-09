@@ -29,7 +29,7 @@ namespace aidel
     }
 
     template <class key_t, class val_t>
-    AidelModel<key_t, val_t>::AidelModel(plexmodel_type &plexmodel,
+    AidelModel<key_t, val_t>::AidelModel(lrmodel_type &lrmodel,
                                          const typename std::vector<key_t>::const_iterator &keys_begin,
                                          const typename std::vector<val_t>::const_iterator &vals_begin,
                                          size_t size, size_t _maxErr) : maxErr(_maxErr), capacity(size)
@@ -286,7 +286,7 @@ namespace aidel
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
                 mob->mob.lfll->collect(retrain_keys, retrain_vals);
-                plexmodel_type model;
+                 lrmodel_type model;
                 model.train(retrain_keys.begin(), retrain_keys.size());
                 size_t err = model.get_maxErr();
                 aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), err);
@@ -312,7 +312,7 @@ namespace aidel
         size_t pos = predict(key);
         pos = locate_in_levelbin(key, pos);
         if (key == keys[pos])
-        {
+        {   
             vals[pos] = -1;
             return true;
         }
@@ -336,7 +336,7 @@ namespace aidel
                 return false;
             else if (res == -1)
             {
-                std::vector<key_t> retrain_keys;
+                /*std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
                 mob->mob.lfll->collect(retrain_keys, retrain_vals);
                 plexmodel_type model;
@@ -350,7 +350,7 @@ namespace aidel
                 {
                     goto retry;
                 }
-                return ai->remove(key);
+                return ai->remove(key);*/
             }
             else
                 return true;
