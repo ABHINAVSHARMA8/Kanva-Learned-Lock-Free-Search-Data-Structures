@@ -34,7 +34,7 @@ namespace aidel
                                          const typename std::vector<val_t>::const_iterator &vals_begin,
                                          size_t size, size_t _maxErr) : maxErr(_maxErr), capacity(size)
     {
-        model = new plexmodel_type(plexmodel.get_vec(), plexmodel.get_ts());
+        model=new lrmodel_type(lrmodel.get_weight0(), lrmodel.get_weight1());
         keys = (key_t *)malloc(sizeof(key_t) * size);
         vals = (val_t *)malloc(sizeof(val_t) * size);
         //valid_flag = (bool *)malloc(sizeof(bool) * size);

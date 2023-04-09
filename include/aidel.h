@@ -63,7 +63,7 @@ private:
     int learning_step = 10000;
     float learning_rate = 0.1;
     cht::CompactHistTree<key_t> cht;
-    ts::TrieSpline<key_t> ts;
+    
 
 };
 
