@@ -107,7 +107,10 @@ size_t AIDEL<key_t, val_t>::backward_train(const typename std::vector<key_t>::co
             append_model(model, keys_begin, vals_begin, end, err);
             return end;
         }
+	if(end>step)
         end -= step;
+        else break;
+        
     }
     end = backward_train(keys_begin, vals_begin, end, int(step*learning_rate));
 	return end;
