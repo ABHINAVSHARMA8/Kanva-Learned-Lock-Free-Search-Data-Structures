@@ -7,6 +7,7 @@
 #include "lr_model_impl.h"
 #include "util.h"
 #include "Uruv/LF_LL.h"
+#include "Uruv/VersionTracker/TrackerList.h"
 
 
 namespace aidel{
@@ -46,10 +47,10 @@ public:
     result_t update(const key_t &key, const val_t &val); //NOT IMPLEMENTED
     //inline bool con_insert(const key_t &key, const val_t &val);
     //result_t con_insert_retrain(const key_t &key, const val_t &val);
-    bool remove(const key_t &key);
+    bool remove(const key_t &key,TrackerList *version_tracker);
     bool find_retrain(const key_t &key, val_t &val);
-    int scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result);
-    bool insert_retrain(const key_t &key, const val_t &val);//-1 for fail
+    int scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result,TrackerList *version_tracker,int ts);
+    bool insert_retrain(const key_t &key, const val_t &val,TrackerList *version_tracker);//-1 for fail
     
     //void resort(std::vector<key_t> &keys, std::vector<val_t> &vals);
 
@@ -60,8 +61,8 @@ private:
     //inline size_t linear_search(const key_t *arr, int n, key_t key);
     //inline size_t find_lower_avx(const int *arr, int n, int key);
     //inline size_t find_lower_avx(const int64_t *arr, int n, int64_t key);
-    bool insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos);
-    bool remove_model_or_bin(const key_t &key, const int bin_pos);
+    bool insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos,TrackerList *version_tracker);
+    bool remove_model_or_bin(const key_t &key, const int bin_pos,TrackerList *version_tracker);
 
 
 private:

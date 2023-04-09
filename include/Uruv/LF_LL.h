@@ -30,7 +30,7 @@ public:
     bool insert(K Key, V value, ll_Node<K,V>* new_node);
     int insert(K Key, V value, int tid, int phase);
     bool search(K key,V value);
-    std::vector<std::pair<K,Vnode<V>*>>* collect(std::vector<std::pair<K,Vnode<V>*>>*, int64_t);
+    void collect(std::vector<K>*,std::vector<V>*, int64_t);
     void collect(std::vector<K>*,std::vector<V>*);
     int range_query(int64_t low, int64_t remaining, int64_t curr_ts, std::vector<std::pair<K,V>>& res,TrackerList *version_tracker);
     ll_Node<K,V>* find(K key);
@@ -218,7 +218,7 @@ int Linked_List<K,V>::insert(K key, V value,TrackerList *version_tracker) {
         if(right_node -> key == key){
             while(true)
             {
-                V curr_value = read(right_node);
+                V curr_value = read(right_node,version_tracker);
 				if(curr_value == value)
 					return 0;
                 if(vCAS(right_node,curr_value,value,version_tracker))

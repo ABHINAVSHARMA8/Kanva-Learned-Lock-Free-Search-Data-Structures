@@ -199,7 +199,7 @@ inline result_t AIDEL<key_t, val_t>::find(const key_t &key, val_t &val)
 template<class key_t, class val_t>
 int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result)
 {       
-    int ts=*(version_tracker.add_timestamp())->ts;
+    int ts=((version_tracker.add_timestamp()))->ts;
     size_t remaining = n;
     size_t model_pos = binary_search_branchless(&model_keys[0], model_keys.size(), key);
     if(model_pos >= aimodels.size())
@@ -219,7 +219,7 @@ template<class key_t, class val_t>
 inline result_t AIDEL<key_t, val_t>::insert(
         const key_t& key, const val_t& val)
 {
-    return find_model(key)[0].insert_retrain(key, val) ? result_t::ok : result_t::failed;
+    return find_model(key)[0].insert_retrain(key, val,&version_tracker) ? result_t::ok : result_t::failed;
     //return find_model(key)[0].con_insert(key, val);
 }
 
@@ -238,7 +238,7 @@ inline result_t AIDEL<key_t, val_t>::update(
 template<class key_t, class val_t>
 inline result_t AIDEL<key_t, val_t>::remove(const key_t& key)
 {
-    return find_model(key)[0].remove(key) ? result_t::ok : result_t::failed;
+    return find_model(key)[0].remove(key,&version_tracker) ? result_t::ok : result_t::failed;
     //return find_model(key)[0].con_insert(key, val);
 }
 

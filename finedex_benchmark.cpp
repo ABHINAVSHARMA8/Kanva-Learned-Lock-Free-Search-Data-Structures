@@ -137,7 +137,7 @@ void *run_fg(void *param) {
     ready_threads++;
     volatile result_t res = result_t::failed;
     val_type dummy_value = 1234;
-
+    std::vector<std::pair<key_type, val_type>> result;
     while (!running)
         ;
 	while (running) {
@@ -145,6 +145,9 @@ void *run_fg(void *param) {
         if (d <= Config.read_ratio) {                   // search
             key_type dummy_key = exist_keys[query_i % exist_keys.size()];
             res = ai->find(dummy_key, dummy_value);
+            result.clear();
+            int n = ai->scan(dummy_key, 10, result);
+            std::cout<<n<<" "<<result.size()<<std::endl;
             query_i++;
             if (unlikely(query_i == exist_keys.size())) {
                 query_i = 0;
