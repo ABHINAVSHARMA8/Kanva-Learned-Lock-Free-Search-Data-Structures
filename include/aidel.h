@@ -11,6 +11,9 @@
 #include "cht/builder.h"
 #include "cht/cht.h"
 #include "piecewise_linear_model.h"
+#include "Uruv/VersionTracker/TrackerList.h"
+
+TrackerList version_tracker;
 
 
 

@@ -25,31 +25,31 @@ public:
     }
     int64_t count();
     void mark();
-    int insert(K Key, V value);
-    int remove(K key);
+    int insert(K Key, V value,TrackerList *version_tracker);
+    int remove(K key,TrackerList *version_tracker);
     bool insert(K Key, V value, ll_Node<K,V>* new_node);
     int insert(K Key, V value, int tid, int phase);
     bool search(K key,V value);
     std::vector<std::pair<K,Vnode<V>*>>* collect(std::vector<std::pair<K,Vnode<V>*>>*, int64_t);
     void collect(std::vector<K>*,std::vector<V>*);
-    void range_query(int64_t low, int64_t high, int64_t curr_ts, std::vector<std::pair<K,V>>& res);
+    int range_query(int64_t low, int64_t remaining, int64_t curr_ts, std::vector<std::pair<K,V>>& res,TrackerList *version_tracker);
     ll_Node<K,V>* find(K key);
     ll_Node<K,V>* find(K key, ll_Node<K,V>**);
-    void init_ts(Vnode<V> *node){
+    void init_ts(Vnode<V> *node,TrackerList *version_tracker){
         if(node -> ts.load(std::memory_order_seq_cst) == -1){
             int64_t invalid_ts = -1;
-            int64_t global_ts = version_tracker.get_latest_timestamp();
+            int64_t global_ts = (*version_tracker).get_latest_timestamp();
             node -> ts.compare_exchange_strong(invalid_ts, global_ts, std::memory_order_seq_cst, std::memory_order_seq_cst );
         }
     }
-    V read(ll_Node<K,V> *node) {
-        init_ts(node -> vhead);
+    V read(ll_Node<K,V> *node,TrackerList *version_tracker) {
+        init_ts(node -> vhead,version_tracker);
         return node -> vhead.load(std::memory_order_seq_cst) -> value;
     }
 
-    bool vCAS(ll_Node<K, V> *node, V old_value,  V new_value){
+    bool vCAS(ll_Node<K, V> *node, V old_value,  V new_value,TrackerList *version_tracker){
         Vnode<V>* head = (Vnode<V>*) unset_mark((uintptr_t) node -> vhead.load(std::memory_order_seq_cst));
-        init_ts(head);
+        init_ts(head,version_tracker);
         if(head -> value != old_value) return false;
 		if(head -> value == new_value)
 			return true;
@@ -62,7 +62,7 @@ public:
         }
         if(node -> vhead.compare_exchange_strong(head,new_node, std::memory_order_seq_cst, std::memory_order_seq_cst))
         {
-            init_ts(new_node);
+            init_ts(new_node,version_tracker);
             return true;
         }
         else{
@@ -70,7 +70,7 @@ public:
             return false;
         }
     }
-    bool vCAS(ll_Node<K, V> *node, V old_value,  V new_value, Vnode<V>* new_node, Vnode<V>* head, Vnode<V>* vnext){
+    bool vCAS(ll_Node<K, V> *node, V old_value,  V new_value, Vnode<V>* new_node, Vnode<V>* head, Vnode<V>* vnext,TrackerList *version_tracker){
         if(head -> value != old_value) return false;
         if(head -> value == new_value)
             return true;
@@ -84,7 +84,7 @@ public:
         }
         if(node -> vhead.compare_exchange_strong(head,new_node, std::memory_order_seq_cst, std::memory_order_seq_cst))
         {
-            init_ts(new_node);
+            init_ts(new_node,version_tracker);
             return true;
         }
         else{
@@ -113,18 +113,19 @@ void Linked_List<K,V>::mark() {
 }
 
 template<typename K, typename V>
-std::vector<std::pair<K,Vnode<V>*>>* Linked_List<K,V>::collect(std::vector<std::pair<K,Vnode<V>*>> *res, int64_t min_ts){
+void Linked_List<K,V>::collect(std::vector<K> *keys,std::vector<V> *values, int64_t min_ts){
     ll_Node<K,V>* left_node = ( ll_Node<K,V>* ) get_unmarked_ref((long)head -> next.load(std::memory_order_seq_cst));
     ll_Node<K,V>* left_next = (ll_Node<K,V>*) get_unmarked_ref((long) left_node -> next.load(std::memory_order_seq_cst));
     while(left_next){
         Vnode<V> *left_node_vhead = (Vnode<V>*) get_unmarked_ref((uintptr_t)left_node -> vhead.load(std::memory_order_seq_cst));
         if(!(left_node_vhead -> value == -1 && left_node_vhead -> ts < min_ts)){
-            (*res).push_back(std::make_pair(left_node -> key, left_node_vhead));
+            (*keys).push_back(left_node->key);
+            (*values).push_back(left_node_vhead->value);
         }
         left_node = left_next;
         left_next = ( ll_Node<K,V>* ) get_unmarked_ref((long) left_next -> next.load(std::memory_order_seq_cst));
     }
-    return res;
+    
 }
 template<typename K, typename V>
 void Linked_List<K,V>::collect(std::vector<K> *keys,std::vector<V> *values){
@@ -143,23 +144,27 @@ void Linked_List<K,V>::collect(std::vector<K> *keys,std::vector<V> *values){
 }
 
 template<typename K, typename V>
-void Linked_List<K,V>::range_query(int64_t low, int64_t high, int64_t curr_ts, std::vector<std::pair<K,V>> &res){
+int Linked_List<K,V>::range_query(int64_t low, int64_t remaining, int64_t curr_ts, std::vector<std::pair<K,V>> &res,TrackerList *version_tracker){
     ll_Node<K,V>* left_node = ( ll_Node<K,V>* ) get_unmarked_ref((long) head -> next.load(std::memory_order_seq_cst));
     ll_Node<K,V>* left_next = (ll_Node<K,V>*) get_unmarked_ref((long) left_node -> next.load(std::memory_order_seq_cst));
     while(left_next && left_node -> key < low){
         left_node = left_next;
         left_next = ( ll_Node<K,V>* ) get_unmarked_ref((long) left_next -> next.load(std::memory_order_seq_cst));
     }
-    while(left_next && left_node -> key <= high)
+    while(left_next && remaining>0)
     {
         Vnode<V>* curr_vhead = (Vnode<V>*) get_unmarked_ref((uintptr_t)left_node -> vhead.load(std::memory_order_seq_cst));
-        init_ts(curr_vhead);
+        init_ts(curr_vhead,version_tracker);
         while(curr_vhead && curr_vhead -> ts > curr_ts) curr_vhead = curr_vhead -> nextv;
-        if(curr_vhead && curr_vhead  -> value != -1)
+        if(curr_vhead && curr_vhead  -> value != -1){
             res.push_back(std::make_pair(left_node -> key, curr_vhead -> value));
+            remaining-=1;
+            if(remaining<=0) break;
+        }
         left_node = left_next;
         left_next = ( ll_Node<K,V>* ) get_unmarked_ref((long) left_next -> next.load(std::memory_order_seq_cst));
     }
+    return remaining;
 }
 
 template<typename K, typename V>
@@ -201,7 +206,7 @@ ll_Node<K,V>* Linked_List<K,V>::find(K key, ll_Node<K, V> **left_node) {
 }
 
 template<typename K, typename V>
-int Linked_List<K,V>::insert(K key, V value) {
+int Linked_List<K,V>::insert(K key, V value,TrackerList *version_tracker) {
 //    return -1 for failed operation,0 for no incremenet,1 for sucess,-2 for retraining,
     if(size.load(std::memory_order_seq_cst)>=threshhold) return -2;//retraining
     while(true)
@@ -216,7 +221,7 @@ int Linked_List<K,V>::insert(K key, V value) {
                 V curr_value = read(right_node);
 				if(curr_value == value)
 					return 0;
-                if(vCAS(right_node,curr_value,value))
+                if(vCAS(right_node,curr_value,value,version_tracker))
                     break;
                 else if(is_marked_ref((uintptr_t) right_node -> vhead.load(std::memory_order_seq_cst)))
                     return -1;
@@ -239,7 +244,7 @@ int Linked_List<K,V>::insert(K key, V value) {
                 }
             }
             if(prev_node -> next.compare_exchange_strong(right_node, new_node)) {
-                init_ts(new_node -> vhead);
+                init_ts(new_node -> vhead,version_tracker);
                 size+=1;//increment size
                 return 1;
             }
@@ -251,8 +256,8 @@ int Linked_List<K,V>::insert(K key, V value) {
 }
 
 template<typename K, typename V>
-int Linked_List<K,V>::remove(K key) {
-    return insert(key,-1);
+int Linked_List<K,V>::remove(K key,TrackerList *version_tracker) {
+    return insert(key,-1,version_tracker);
 }
 
 template<typename K, typename V>

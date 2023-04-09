@@ -7,6 +7,7 @@
 #include "aidel_model_impl.h"
 #include "piecewise_linear_model.h"
 
+
 namespace aidel {
 
 template<class key_t, class val_t>
@@ -197,16 +198,17 @@ inline result_t AIDEL<key_t, val_t>::find(const key_t &key, val_t &val)
 // =================  scan ====================
 template<class key_t, class val_t>
 int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result)
-{   /*
+{       
+    int ts=*(version_tracker.add_timestamp())->ts;
     size_t remaining = n;
     size_t model_pos = binary_search_branchless(&model_keys[0], model_keys.size(), key);
     if(model_pos >= aimodels.size())
         model_pos = aimodels.size()-1;
     while(remaining>0 && model_pos < aimodels.size()){
-        remaining = aimodels[model_pos].scan(key, remaining, result);
+        remaining = aimodels[model_pos++].scan(key, remaining, result,&version_tracker,ts);//CHECK:shouldn't model_pos increase by 1
     }
-    return remaining;*/
-    return 0;
+    return remaining;
+    
     //TODO:Range Query
 }
 

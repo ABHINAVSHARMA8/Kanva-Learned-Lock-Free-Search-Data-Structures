@@ -170,6 +170,6 @@ long get_unmarked_ref(long w)
     return w & ~0x1L;
 }
 
-TrackerList version_tracker;
+//TrackerList version_tracker;
 
 #endif //UNTITLED_UTIL_H

@@ -350,7 +350,7 @@ result_t AidelModel<key_t, val_t>::con_insert_retrain(const key_t &key, const va
 }*/
 
 template<class key_t, class val_t>
-bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos)
+bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos,TrackerList *version_tracker)
 {
     // insert bin or model
     model_or_bin_t *mob = mobs_lf[bin_pos];
@@ -368,12 +368,12 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
         assert(mob != nullptr);
         if (mob->isbin)
         { // insert into bin
-            int res = mob->mob.lflb->insert(key, val);//CHECK return type
+            int res = mob->mob.lflb->insert(key, val,version_tracker);//CHECK return type
             if (res==-2)
             {
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
-                mob->mob.lflb->collect(&retrain_keys,&retrain_vals);
+                mob->mob.lflb->collect(&retrain_keys,&retrain_vals,(*version_tracker)->get_latest_timestamp());
                 lrmodel_type model;
                 
                 model.train(retrain_keys.begin(), retrain_keys.size());
@@ -422,7 +422,7 @@ bool AidelModel<key_t, val_t>::remove(const key_t &key)
 }
 
 template<class key_t, class val_t>
-bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int bin_pos)
+bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int bin_pos,TrackerList *version_tracker)
 {   
    retry:
         model_or_bin_t *mob = mobs_lf[bin_pos];
@@ -431,14 +431,14 @@ bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int b
         if (mob->isbin)
         {
             int res;
-            res = mob->mob.lflb->remove(key);//CHECK remove
+            res = mob->mob.lflb->remove(key,version_tracker);//CHECK remove
             /*if (res == -1)
                 return false;*/
             if (res == -2)
             {
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
-                mob->mob.lflb->collect(&retrain_keys,&retrain_vals);
+                mob->mob.lflb->collect(&retrain_keys,&retrain_vals,(*version_tracker)->get_latest_timestamp());
                 lrmodel_type model;
                 model.train(retrain_keys.begin(), retrain_keys.size());
                 size_t err = model.get_maxErr();
@@ -467,8 +467,8 @@ bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int b
 
 // ========================== scan ===================
 template<class key_t, class val_t>
-int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result)
-{   /*
+int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result,TrackerList *version_tracker,int ts)
+{   
     size_t remaining = n;
 
     size_t pos = predict(key);
@@ -479,19 +479,19 @@ int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector
             remaining--;
             if(remaining<=0) break;
         }
-        if(mobs_lf[pos].load(std::memory_order_seq_cst){
+        if(mobs_lf[pos].load(std::memory_order_seq_cst)){
             model_or_bin_t *mob;
             mob = mobs_lf[bin_pos].load(std::memory_order_seq_cst);
             if(mob->isbin){
-                remaining = mob->mob.lflb->range_query(key, remaining, result);//change for start key,n
+                remaining = mob->mob.lflb->range_query(key, remaining,ts,result,version_tracker);//change for start key,n
             } else {
-                remaining = mob->mob.ai->scan(key, remaining, result);
+                remaining = mob->mob.ai->scan(key, remaining, result,version_tracker,ts);
             }
         }
         pos++;
     }
-    return remaining;*/
-    return 0;
+    return remaining;
+    
     //TODO:Range Query
 
 }
