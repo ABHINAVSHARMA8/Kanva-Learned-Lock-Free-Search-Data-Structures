@@ -43,7 +43,7 @@ public:
     result_t update(const key_t &key, const val_t &val); //NOT IMPLEMENTED
     //inline bool con_insert(const key_t &key, const val_t &val);
     //result_t con_insert_retrain(const key_t &key, const val_t &val);
-    bool remove(const key_t &key);
+    int remove(const key_t &key);
     bool find(const key_t &key, val_t &val);
     int scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result);
     int insert_retrain(const key_t &key, const val_t &val);//-1 for fail

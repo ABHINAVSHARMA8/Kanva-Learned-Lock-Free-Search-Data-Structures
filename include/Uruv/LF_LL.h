@@ -9,6 +9,8 @@
 #include <unordered_set>
 #include <iostream>
 #include "util.h"
+std::atomic<int> size(0); //without sentinel
+#define threshhold 100 //random
 
 template<typename K, typename V>
 class Linked_List {
@@ -144,11 +146,12 @@ void Linked_List<K,V>::range_query(int64_t low, int64_t high, int64_t curr_ts, s
 }
 
 template<typename K, typename V>
-bool Linked_List<K,V>::search(K key) {
+bool Linked_List<K,V>::search(K key,V value) { //CHANGED CHECK:inserted value fieled
     ll_Node<K,V>* curr = head;
     while(curr -> key < key)
         curr = (ll_Node<K,V>*) get_unmarked_ref((long) curr -> next .load(std::memory_order_seq_cst));
-    return (curr -> key == key && !is_marked_ref((long) curr -> next.load(std::memory_order_seq_cst)));
+    return (curr -> key == key && curr->vhead.load(std::memory_order_seq_cst)->value==value 
+    && !is_marked_ref((long) curr -> next.load(std::memory_order_seq_cst)));
 }
 
 
@@ -182,7 +185,8 @@ ll_Node<K,V>* Linked_List<K,V>::find(K key, ll_Node<K, V> **left_node) {
 
 template<typename K, typename V>
 int Linked_List<K,V>::insert(K key, V value) {
-//    return -1;
+//    return -1 for failed operation,0 for no incremenet,1 for sucess,-2 for retraining,
+    if(size.load(std::memory_order_seq_cst)>=threshhold) return -2;//retraining
     while(true)
     {
         ll_Node<K,V>* prev_node = nullptr;
@@ -203,7 +207,7 @@ int Linked_List<K,V>::insert(K key, V value) {
                 if(FAILURE >= MAX_FAILURE)
                     return -1;
             }
-            return 0;
+            return 0;//version list has changed
         }
         else
         {
@@ -219,6 +223,7 @@ int Linked_List<K,V>::insert(K key, V value) {
             }
             if(prev_node -> next.compare_exchange_strong(right_node, new_node)) {
                 init_ts(new_node -> vhead);
+                size+=1;//increment size
                 return 1;
             }
             FAILURE++;

@@ -173,7 +173,7 @@ bool AidelModel<key_t, val_t>::find_retrain(const key_t &key, val_t &val)
         if (mob == nullptr)
             return -1;
         if (mob->isbin)
-            return mob->mob.lflb->search(key);//CHECK
+            return mob->mob.lflb->search(key,val);//CHECK
         else
             return mob->mob.ai->find_retrain(key, val);
 }
@@ -359,7 +359,7 @@ template<class key_t, class val_t>
 bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos)
 {
     // insert bin or model
-    /*
+
     retry:
         if (mob == nullptr)
         {
@@ -373,8 +373,8 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
         assert(mob != nullptr);
         if (mob->isbin)
         { // insert into bin
-            bool res = mob->mob.lflb->insert(key, val);//CHECK return type
-            if (!res)
+            int res = mob->mob.lflb->insert(key, val);//CHECK return type
+            if (res==-2)
             {
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
@@ -390,14 +390,16 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
                 {
                     goto retry;
                 }
-                res = ai->insert_retrain(key, val);
-                return res;
+                return ai->insert_retrain(key, val);
+                //return (res==1 || res==0);
             }
+
+            else return (res>=0);//res==0 || res==1
         }
-        else
+        else 
         { // insert into model
             return mob->mob.ai->insert_retrain(key, val);
-        }*/
+        }
         return false;
 }
 
@@ -424,7 +426,7 @@ result_t AidelModel<key_t, val_t>::remove(const key_t &key)
 
 template<class key_t, class val_t>
 result_t AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int bin_pos)
-{   /*
+{   
    retry:
         model_or_bin_t *mob = mobs_lf[bin_pos];
         if (mob == nullptr)
@@ -433,9 +435,9 @@ result_t AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const i
         {
             int res;
             res = mob->mob.lflb->remove(key);//CHECK remove
-            if (res == -1)
-                return false;
-            else if (res == -1)
+            /*if (res == -1)
+                return false;*/
+            if (res == -2)
             {
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
@@ -454,14 +456,14 @@ result_t AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const i
                 return ai->remove(key);
             }
             else
-                return true;
+                return  (res>=0);//res==0 || res==1
         }
         else
         {
             return mob->mob.ai->remove(key);
         }
         return false;
-    */
+    
     //TODO
 }
 
