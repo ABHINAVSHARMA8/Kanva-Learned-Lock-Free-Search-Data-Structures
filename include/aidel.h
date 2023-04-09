@@ -57,7 +57,7 @@ private:
     std::vector<key_t> model_keys;
     std::vector<aidelmodel_type> aimodels;
     //root_type* root = nullptr;
-    //std::vector<canonical_segment> segments;
+    std::vector<canonical_segment> segments;
 
     int maxErr = 0;
     int learning_step = 10000;

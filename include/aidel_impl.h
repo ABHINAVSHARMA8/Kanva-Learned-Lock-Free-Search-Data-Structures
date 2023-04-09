@@ -43,23 +43,31 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
         
         lrmodel_type model;
         model.train(keys.begin()+start, end-start);
+        
         size_t err = model.get_maxErr();
+       // std::cout<<__LINE__<<" "<<err<<std::endl;
         if(err == maxErr) {
             append_model(model, keys.begin()+start, vals.begin()+start, end-start, err);
+            //std::cout<<__LINE__<<std::endl;
         }else if(err < maxErr) {
             if(end>=keys.size()){
                 append_model(model, keys.begin()+start, vals.begin()+start, end-start, err);
+                //std::cout<<__LINE__<<std::endl;
                 break;
             }
             end += learning_step;
             if(end>keys.size()){
                 end = keys.size();
+                //std::cout<<__LINE__<<std::endl;
             }
             continue;
         } else {
+            //std::cout<<__LINE__<<" "<<end-start<<" "<<int(learning_step*learning_rate)<<std::endl;
             size_t offset = backward_train(keys.begin()+start, vals.begin()+start, end-start, int(learning_step*learning_rate));
+            //std::cout<<__LINE__<<std::endl;
 			end = start + offset;
         }
+        
         start = end;
         end += learning_step;
         if(end>=keys.size())
@@ -105,7 +113,9 @@ size_t AIDEL<key_t, val_t>::backward_train(const typename std::vector<key_t>::co
             append_model(model, keys_begin, vals_begin, end, err);
             return end;
         }
+        if(end>step)
         end -= step;
+        else break;
     }
     end = backward_train(keys_begin, vals_begin, end, int(step*learning_rate));
 	return end;
@@ -247,7 +257,7 @@ inline result_t AIDEL<key_t, val_t>::remove(const key_t& key)
 }
 
 // ========================== using OptimalLPR train the model ==========================
-/*template<class key_t, class val_t>
+template<class key_t, class val_t>
 void AIDEL<key_t, val_t>::train_opt(const std::vector<key_t> &keys, 
                                     const std::vector<val_t> &vals, size_t _maxErr)
 {
@@ -261,12 +271,12 @@ void AIDEL<key_t, val_t>::train_opt(const std::vector<key_t> &keys,
     COUT_THIS("[aidle] get models -> "<< segments.size());
 
    
-}*/
+}
 
-/*template<class key_t, class val_t>
+template<class key_t, class val_t>
 size_t AIDEL<key_t, val_t>::model_size(){
     return segments.size();
-}*/
+}
 
 
 
