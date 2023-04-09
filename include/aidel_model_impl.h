@@ -37,12 +37,12 @@ namespace aidel
         model = new plexmodel_type(plexmodel.get_vec(), plexmodel.get_ts());
         keys = (key_t *)malloc(sizeof(key_t) * size);
         vals = (val_t *)malloc(sizeof(val_t) * size);
-        valid_flag = (bool *)malloc(sizeof(bool) * size);
+        //valid_flag = (bool *)malloc(sizeof(bool) * size);
         for (int i = 0; i < size; i++)
         {
             keys[i] = *(keys_begin + i);
             vals[i] = *(vals_begin + i);
-            valid_flag[i] = true;
+            //valid_flag[i] = true;
         }
         mobs_lf = (std::atomic<model_or_bin_t *> *)malloc(sizeof(std::atomic<model_or_bin_t *>) * (size + 1));
         for (int i = 0; i < size + 1; i++)
@@ -165,7 +165,7 @@ namespace aidel
         if (mob == nullptr)
             return -1;
         if (mob->isbin)
-            return mob->mob.lflb->search(key);
+            return mob->mob.lfll->search(key);
         else
             return mob->mob.ai->find_retrain(key, val);
     }
@@ -217,7 +217,32 @@ namespace aidel
     template <class key_t, class val_t>
     result_t AidelModel<key_t, val_t>::update(const key_t &key, const val_t &val)
     {
-        NOT_IMPLEMENTED;
+        size_t pos = predict(key);
+        pos = locate_in_levelbin(key, pos);
+
+        if (key == keys[pos])
+        {
+            if (vals[pos] != -1)
+            {
+                vals[pos] = val;
+                return result_t::ok;
+            }
+            return result_t::failed;
+        }
+        int bin_pos = pos;
+        bin_pos = key < keys[bin_pos] ? bin_pos : (bin_pos + 1);
+        model_or_bin_t *mob = mobs_lf[bin_pos];
+        if (mob == nullptr)
+            return result_t::failed;
+        result_t res = result_t::failed;
+        if (mob->isbin)
+        {
+            res = mob->mob.lfll->insert(key, val, true);
+        } else {
+             res = mob->mob.ai->update(key, val);
+        }
+        assert(res != result_t::retrain);
+        return res;
     }
 
     // =============================== insert =======================
@@ -229,10 +254,7 @@ namespace aidel
 
         if (key == keys[pos])
         {
-            if (vals[pos] == -1)
-                return false;
-            else
-                return true;
+            return vals[pos] != -1;
         }
 
         int bin_pos = pos;
@@ -248,7 +270,7 @@ namespace aidel
         if (mob == nullptr)
         {
             model_or_bin_t *new_mob = new model_or_bin_t();
-            new_mob->mob.lflb = new Bin<key_t, val_t>();
+            new_mob->mob.lfll = new Linked_List<key_t, val_t>();
             new_mob->isbin = true;
             if (!mobs_lf[bin_pos].compare_exchange_strong(mob, new_mob, std::memory_order_seq_cst, std::memory_order_seq_cst))
                 goto retry;
@@ -257,12 +279,13 @@ namespace aidel
         assert(mob != nullptr);
         if (mob->isbin)
         { // insert into bin
-            bool res = mob->mob.lflb->insert(key, val);
-            if (!res)
+            // bool res = mob->mob.lfll->insert(key, val);
+            result_t res = mob->mob.lfll->insert(key, val);
+            if (res == result_t::retrain)
             {
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
-                mob->mob.lflb->collect(retrain_keys, retrain_vals);
+                mob->mob.lfll->collect(retrain_keys, retrain_vals);
                 plexmodel_type model;
                 model.train(retrain_keys.begin(), retrain_keys.size());
                 size_t err = model.get_maxErr();
@@ -274,15 +297,12 @@ namespace aidel
                 {
                     goto retry;
                 }
-                res = ai->insert_retrain(key, val);
-                return res;
+                return ai->insert_retrain(key, val);
             }
+            return (res == result_t::ok);
         }
-        else
-        { // insert into model
-            return mob->mob.ai->insert_retrain(key, val);
-        }
-        return false;
+
+        return mob->mob.ai->insert_retrain(key, val);
     }
 
     // ========================== remove =====================
@@ -290,7 +310,7 @@ namespace aidel
     bool AidelModel<key_t, val_t>::remove(const key_t &key)
     {
         size_t pos = predict(key);
-        pos = locate_in_levelbin(key, pos); // TODO(Abhinav): Commented originally, but uncommented in Kanva
+        pos = locate_in_levelbin(key, pos);
         if (key == keys[pos])
         {
             vals[pos] = -1;
@@ -311,14 +331,14 @@ namespace aidel
         if (mob->isbin)
         {
             int res;
-            res = mob->mob.lflb->remove(key);
+            res = mob->mob.lfll->remove(key);
             if (res == -2)
                 return false;
             else if (res == -1)
             {
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
-                mob->mob.lflb->collect(retrain_keys, retrain_vals);
+                mob->mob.lfll->collect(retrain_keys, retrain_vals);
                 plexmodel_type model;
                 model.train(retrain_keys.begin(), retrain_keys.size());
                 size_t err = model.get_maxErr();

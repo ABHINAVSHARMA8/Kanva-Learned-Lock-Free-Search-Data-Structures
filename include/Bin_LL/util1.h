@@ -55,7 +55,7 @@ template<typename K, typename V>
 class ll_Node{
 public:
     K key;
-    V value;
+    std::atomic<V> value;
     std::atomic<ll_Node<K,V>*> next;
     ll_Node(K __key, V __value)
     {
@@ -76,57 +76,57 @@ ll_Node<int64_t, int64_t>* dummy_node = new ll_Node<int64_t, int64_t>(-1, -1);
 
 
 
-int64_t is_freeze(uintptr_t i)
+inline int64_t is_freeze(uintptr_t i)
 {
     return (int64_t)(i & (uintptr_t)0x02);
 }
 
 
-int64_t is_marked(uintptr_t i)
+inline int64_t is_marked(uintptr_t i)
 {
     return (int64_t)(i & (uintptr_t)0x01);
 }
 
-uintptr_t set_freeze(uintptr_t i)
+inline uintptr_t set_freeze(uintptr_t i)
 {
     return (i | (uintptr_t)0x02);
 }
 
-uintptr_t set_mark(uintptr_t i)
+inline uintptr_t set_mark(uintptr_t i)
 {
     return (i | (uintptr_t)0x01);
 }
 
-uintptr_t unset_freeze(uintptr_t i)
+inline uintptr_t unset_freeze(uintptr_t i)
 {
     return (i & ~(uintptr_t)0x02);
 }
 
-uintptr_t unset_freeze_mark(uintptr_t i)
+inline uintptr_t unset_freeze_mark(uintptr_t i)
 {
     return (i & ~(uintptr_t)0x03);
 }
 
 
-uintptr_t unset_mark(uintptr_t i)
+inline uintptr_t unset_mark(uintptr_t i)
 {
     return (i & ~(uintptr_t)0x01);
 }
 
-int64_t is_marked_ref(long i)
+inline int64_t is_marked_ref(long i)
 {
     /* return (int64_t) (i & (LONG_MIN+1)); */
     return (int64_t) (i & 0x1L);
 }
 
-long unset_mark(long i)
+inline long unset_mark(long i)
 {
     /* i &= LONG_MAX-1; */
     i &= ~0x1L;
     return i;
 }
 
-long set_mark(long i)
+inline long set_mark(long i)
 {
     /* i = unset_mark(i); */
     /* i += 1; */
@@ -134,7 +134,7 @@ long set_mark(long i)
     return i;
 }
 
-long get_unmarked_ref(long w)
+inline long get_unmarked_ref(long w)
 {
     /* return unset_mark(w); */
     return w & ~0x1L;

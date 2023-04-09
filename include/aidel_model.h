@@ -4,7 +4,7 @@
 #include "plex_model.h"
 #include "plex_model_impl.h"
 //#include "util.h"
-#include "Bin_LL/Bin.h"
+#include "Bin_LL/LF_LL.h"
 
 #define NOT_IMPLEMENTED                                            \
     {                                                              \
@@ -26,10 +26,10 @@ namespace aidel
             typedef union pointer
             {
                 aidelmodel_type *ai;
-                Bin<key_t, val_t> *lflb;
+                Linked_List<key_t, val_t> *lfll;
             } pointer_t;
             pointer_t mob;
-            bool volatile isbin = true; // true = lflb, false = ai
+            bool volatile isbin = true; // true = lfll, false = ai
             volatile uint8_t locked = 0;
         } model_or_bin_t;
 
