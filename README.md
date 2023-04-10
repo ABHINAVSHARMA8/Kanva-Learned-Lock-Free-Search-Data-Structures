@@ -12,4 +12,4 @@ Notes:
 TODO:
 
 1. Throughput of insert is better,read slightly lagging
-2.
+2.Replace binary search by exponential search as last mile search

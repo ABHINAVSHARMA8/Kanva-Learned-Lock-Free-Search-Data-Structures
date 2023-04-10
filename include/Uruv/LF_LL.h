@@ -130,10 +130,10 @@ void Linked_List<K,V>::collect(std::vector<K> *keys,std::vector<V> *values, int6
     
 }
 template<typename K, typename V>
-void Linked_List<K,V>::collect(std::vector<K> *keys,std::vector<V> *values){
+std::vector<Vnode<V>*> Linked_List<K,V>::collect(std::vector<K> *keys,std::vector<V> *values){
     ll_Node<K,V>* left_node = ( ll_Node<K,V>* ) get_unmarked_ref((long)head -> next.load(std::memory_order_seq_cst));
     ll_Node<K,V>* left_next = (ll_Node<K,V>*) get_unmarked_ref((long) left_node -> next.load(std::memory_order_seq_cst));
-    
+    std::vector<Vnode<V>*> version_lists;
     /*ll_Node<K,V>* left_node = head->next.load(std::memory_order_seq_cst);
     ll_Node<K,V>* left_next=left_node -> next.load(std::memory_order_seq_cst);
     */
@@ -145,6 +145,7 @@ void Linked_List<K,V>::collect(std::vector<K> *keys,std::vector<V> *values){
            
             (*keys).push_back(left_node->key);
             (*values).push_back(left_node_vhead->value);
+            version_lists.push_back(left_node_vhead);
         }
         
         left_node = left_next;
