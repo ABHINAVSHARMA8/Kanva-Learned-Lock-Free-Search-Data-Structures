@@ -39,7 +39,7 @@ struct config{
 	size_t item_num  = 20000;
 	size_t exist_num = 10000;
 	size_t runtime = 10;
-	size_t thread_num =1;
+	size_t thread_num =4;
 	size_t benchmark = 0;  
 	size_t insert_factor = 1;
 	double skewness = 0.05;

@@ -146,13 +146,13 @@ void *run_fg(void *param) {
             key_type dummy_key = exist_keys[query_i % exist_keys.size()];
             res = ai->find(dummy_key, dummy_value);
             result.clear();
-            /*int n = ai->scan(dummy_key, 1000, result);
+            int n = ai->scan(dummy_key, 1000, result);
             //std::cout<<n<<" "<<result.size()<<std::endl;
             assert(result[0].first>=dummy_key);
             //std::cout<<__LINE__<<std::endl;
             for(int i=1;i<result.size();i++){
                 assert(result[i].first>result[i-1].first);
-            }*/
+            }
             
             query_i++;
             if (unlikely(query_i == exist_keys.size())) {
