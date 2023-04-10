@@ -13,7 +13,7 @@
 #include "piecewise_linear_model.h"
 #include "Uruv/VersionTracker/TrackerList.h"
 #include<atomic>
-std::atomic<int> range_query(0);
+
 
 TrackerList version_tracker;
 

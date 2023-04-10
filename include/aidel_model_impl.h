@@ -32,19 +32,47 @@ template<class key_t, class val_t>
 AidelModel<key_t, val_t>::AidelModel(lrmodel_type &lrmodel, 
                                      const typename std::vector<key_t>::const_iterator &keys_begin, 
                                      const typename std::vector<val_t>::const_iterator &vals_begin, 
+                                     size_t size, size_t _maxErr,std::vector<Vnode<val_t>*> version_lists) : maxErr(_maxErr), capacity(size)
+{
+    model=new lrmodel_type(lrmodel.get_weight0(), lrmodel.get_weight1());
+    /*keys = (key_t *)malloc(sizeof(key_t)*size);
+    vals = (val_t *)malloc(sizeof(val_t)*size);
+    */
+    
+    model_array=(VersionedArray<key_t,val_t> *)malloc(sizeof(VersionedArray<key_t,val_t>)*size);
+    valid_flag = (bool*)malloc(sizeof(bool)*size);
+    for(int i=0; i<size; i++){
+        /*keys[i] = *(keys_begin+i);
+        vals[i] = *(vals_begin+i);
+        */
+        VersionedArray tempObject(*(keys_begin+i),*(vals_begin+i),version_lists[i]);//do memory reclamation here
+        model_array[i]=tempObject;//CHECK:should use new?
+        valid_flag[i] = true;
+    }
+    mobs_lf = (std::atomic<model_or_bin_t *> *)malloc(sizeof(std::atomic<model_or_bin_t *>) * (size + 1));
+    for (int i = 0; i < size + 1; i++)
+            mobs_lf[i] = nullptr;
+    
+}
+
+template<class key_t, class val_t>
+AidelModel<key_t, val_t>::AidelModel(lrmodel_type &lrmodel, 
+                                     const typename std::vector<key_t>::const_iterator &keys_begin, 
+                                     const typename std::vector<val_t>::const_iterator &vals_begin, 
                                      size_t size, size_t _maxErr) : maxErr(_maxErr), capacity(size)
 {
     model=new lrmodel_type(lrmodel.get_weight0(), lrmodel.get_weight1());
     /*keys = (key_t *)malloc(sizeof(key_t)*size);
     vals = (val_t *)malloc(sizeof(val_t)*size);
     */
-    model_array=(model_array *)malloc(sizeof(model_array)*size);
+    model_array=(VersionedArray<key_t,val_t> *)malloc(sizeof(VersionedArray<key_t,val_t>)*size);
     valid_flag = (bool*)malloc(sizeof(bool)*size);
     for(int i=0; i<size; i++){
         /*keys[i] = *(keys_begin+i);
         vals[i] = *(vals_begin+i);
         */
-        model_array[i]=VersionedArray(*(keys_begin+i),*(vals_begin+i));//CHECK:should use new?
+        VersionedArray tempObject(*(keys_begin+i),*(vals_begin+i));//CHECK:do memory reclamaiion 
+        model_array[i]=tempObject;//CHECK:should use new?
         valid_flag[i] = true;
     }
     mobs_lf = (std::atomic<model_or_bin_t *> *)malloc(sizeof(std::atomic<model_or_bin_t *>) * (size + 1));
@@ -81,7 +109,7 @@ void AidelModel<key_t, val_t>::print_keys()
 
         for (size_t i = 0; i < capacity; i++)
         {
-            std::cout << "keys[" << i << "]: " << keys[i] << std::endl;
+            std::cout << "keys[" << i << "]: " << model_array[i].key<< std::endl;
             if (mobs_lf[i + 1])
             {
                 if (mobs_lf[i + 1]->isbin)
@@ -109,7 +137,7 @@ void AidelModel<key_t, val_t>::print_model_retrain()
             }
         }
     for(size_t i=0; i<capacity; i++){
-        std::cout << "keys[" << i << "]: " << keys[i] << std::endl;
+        std::cout << "keys[" << i << "]: " <<model_array[i].key<< std::endl;
         if (mobs_lf[i + 1])
         {
             if (mobs_lf[i + 1]->isbin)
@@ -157,12 +185,12 @@ bool AidelModel<key_t, val_t>::find_retrain(const key_t &key, val_t &val)
 
     pos = locate_in_levelbin(key, pos);
     //if(key == keys[pos]){
-    if(key==model_array[pos].key) 
+    if(key==model_array[pos].key){
          
         if(model_array[pos].getValue()==val) return true;
         return false;
     }
-    int bin_pos = key<keys[pos]?pos:(pos+1);
+    int bin_pos = key<model_array[pos].key?pos:(pos+1);
     model_or_bin_t *mob;
     mob = mobs_lf[bin_pos].load(std::memory_order_seq_cst);
    
@@ -250,7 +278,7 @@ inline size_t AidelModel<key_t, val_t>::locate_in_levelbin(const key_t &key, con
 
     // search
     size_t begin, end, mid;
-    if(key > keys[index_pos]){
+    if(key > model_array[index_pos].key){
         begin = index_pos+1 < upbound? (index_pos+1):upbound;
         end = begin+maxErr < upbound? (begin+maxErr):upbound;
     } else {
@@ -261,7 +289,7 @@ inline size_t AidelModel<key_t, val_t>::locate_in_levelbin(const key_t &key, con
     assert(begin<=end);
     while(begin != end){
         mid = (end + begin+2) / 2;
-        if(keys[mid]<=key) {
+        if(model_array[mid].key<=key) {
             begin = mid;
         } else
             end = mid-1;
@@ -329,7 +357,7 @@ inline bool AidelModel<key_t, val_t>::insert_retrain(const key_t &key, const val
     }
     //std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
     int bin_pos = pos;
-    bin_pos = key<keys[bin_pos]?bin_pos:(bin_pos+1);
+    bin_pos = key<model_array[bin_pos].key?bin_pos:(bin_pos+1);
     //std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
     return insert_model_or_bin(key, val, bin_pos,version_tracker);
 }
@@ -429,8 +457,8 @@ bool AidelModel<key_t, val_t>::remove(const key_t &key,TrackerList *version_trac
         }
         return false;
     }
-    int bin_pos = key<keys[pos]?pos:(pos+1);
-    return remove_model_or_bin(key, bin_pos,version_tracker,range_query);
+    int bin_pos = key<model_array[pos].key?pos:(pos+1);
+    return remove_model_or_bin(key, bin_pos,version_tracker);
 }
 
 template<class key_t, class val_t>
@@ -482,15 +510,18 @@ bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int b
 template<class key_t, class val_t>
 int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result,TrackerList *version_tracker,int ts)
 {   
-    /*
+    
     size_t remaining = n;
     size_t pos = predict(key);
     pos = locate_in_levelbin(key, pos);
     while(remaining>0 && pos<=capacity) {
-        if(pos<capacity && keys[pos]>=key){
-            result.push_back(std::pair<key_t, val_t>(keys[pos], vals[pos]));
-            remaining--;
-            if(remaining<=0) break;
+        if(pos<capacity && model_array[pos].key>=key){
+            val_t value = model_array[pos].getVersionedValue(version_tracker,ts);
+            if(value!=-1){
+                result.push_back(std::pair<key_t, val_t>(model_array[pos].key, value));
+                remaining--;
+                if(remaining<=0) break;
+            }
         }
         if(mobs_lf[pos].load(std::memory_order_seq_cst)){
             model_or_bin_t *mob;
@@ -504,7 +535,7 @@ int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector
         pos++;
     }
     return remaining;
-    */
+    
     return 0;
     
     //TODO:Range Query

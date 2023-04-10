@@ -33,7 +33,7 @@ public:
     int insert(K Key, V value, int tid, int phase);
     bool search(K key,V value);
     void collect(std::vector<K>*,std::vector<V>*, int64_t);
-    void collect(std::vector<K>*,std::vector<V>*);
+    std::vector<Vnode<V>*> collect(std::vector<K>*,std::vector<V>*);
     int range_query(int64_t low, int64_t remaining, int64_t curr_ts, std::vector<std::pair<K,V>>& res,TrackerList *version_tracker);
     ll_Node<K,V>* find(K key);
     ll_Node<K,V>* find(K key, ll_Node<K,V>**);
@@ -151,6 +151,7 @@ std::vector<Vnode<V>*> Linked_List<K,V>::collect(std::vector<K> *keys,std::vecto
         left_node = left_next;
         left_next = ( ll_Node<K,V>* ) get_unmarked_ref((long) left_next -> next.load(std::memory_order_seq_cst));
     }
+    return version_lists;
 }
 
 template<typename K, typename V>
@@ -166,7 +167,7 @@ int Linked_List<K,V>::range_query(int64_t low, int64_t remaining, int64_t curr_t
     {
         Vnode<V>* curr_vhead = (Vnode<V>*) get_unmarked_ref((uintptr_t)left_node -> vhead.load(std::memory_order_seq_cst));
         init_ts(curr_vhead,version_tracker);
-        while(curr_vhead && curr_vhead -> ts > curr_ts) curr_vhead = curr_vhead -> nextv;
+        while(curr_vhead && curr_vhead -> ts >= curr_ts) curr_vhead = curr_vhead -> nextv;
         if(curr_vhead && curr_vhead  -> value != -1){
             //std::cout<<"Range query in level bin"<<std::endl;
             res.push_back(std::make_pair(left_node -> key, curr_vhead -> value));

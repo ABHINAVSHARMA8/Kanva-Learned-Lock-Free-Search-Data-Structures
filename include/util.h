@@ -461,16 +461,16 @@ class VersionedArray{
 
   public:
     key_t key;
-    std::atomic<Vnode<V>*> vhead;
+    std::atomic<Vnode<val_t>*> vhead;
 
     VersionedArray(key_t key,val_t value){
         this -> key = key;
-        Vnode<V> *temp = new Vnode(value);
+        Vnode<val_t> *temp = new Vnode(value);
         vhead.store(temp, std::memory_order_seq_cst);
         
     }
 
-    VersionedArray(K key, Vnode<V>* vhead)
+    VersionedArray(key_t key, Vnode<val_t>* vhead)
     {
         this -> key = key;
         this -> vhead.store(vhead, std::memory_order_seq_cst);
@@ -481,11 +481,11 @@ class VersionedArray{
       return vhead.load(std::memory_order_seq_cst)->value;
     }
 
-    void init_ts(Vnode<V> *node,TrackerList *version_tracker){
+    void init_ts(Vnode<val_t> *node,TrackerList *version_tracker){
         if(node ->ts.load(std::memory_order_seq_cst) == -1){
             int64_t invalid_ts = -1;
             int64_t global_ts = (*version_tracker).get_latest_timestamp();
-            node -> -> ts.compare_exchange_strong(invalid_ts, global_ts, std::memory_order_seq_cst, std::memory_order_seq_cst );
+            node -> ts.compare_exchange_strong(invalid_ts, global_ts, std::memory_order_seq_cst, std::memory_order_seq_cst );
         }
     }
 
@@ -495,12 +495,12 @@ class VersionedArray{
     }
 
     bool vCAS(val_t old_value,val_t new_value,TrackerList *version_tracker){
-        Vnode<V>* head = (Vnode<V>*) unset_mark((uintptr_t)vhead.load(std::memory_order_seq_cst));
+        Vnode<val_t>* head = (Vnode<val_t>*) unset_mark((uintptr_t)vhead.load(std::memory_order_seq_cst));
         init_ts(head,version_tracker);
         if(head -> value != old_value) return false;
 		    if(head -> value == new_value)
 			    return true;
-        Vnode<V>* new_node = new Vnode<val_t>(new_value, head);
+        Vnode<val_t>* new_node = new Vnode<val_t>(new_value, head);
         
         if(vhead.compare_exchange_strong(head,new_node, std::memory_order_seq_cst, std::memory_order_seq_cst))
         {
@@ -521,12 +521,24 @@ class VersionedArray{
         if(curr_value == value)
           return false; //already present
         if(vCAS(curr_value,value,version_tracker)) //at vhead
-            breakl
+            break;
         else if(is_marked_ref((uintptr_t)vhead.load(std::memory_order_seq_cst)))
             return false;
       }
       return 0;
   
+    }
+
+    val_t getVersionedValue(TrackerList *version_tracker,int64_t curr_ts){
+
+      Vnode<val_t>* curr_vhead = (Vnode<val_t>*) get_unmarked_ref((uintptr_t) vhead.load(std::memory_order_seq_cst));
+      init_ts(curr_vhead,version_tracker);
+      while(curr_vhead && curr_vhead -> ts >= curr_ts) curr_vhead = curr_vhead -> nextv;
+      if(curr_vhead && curr_vhead  -> value != -1){
+            //std::cout<<"Range query in level bin"<<std::endl;
+            return curr_vhead->value;
+      }
+      return -1;
     }
 
 };

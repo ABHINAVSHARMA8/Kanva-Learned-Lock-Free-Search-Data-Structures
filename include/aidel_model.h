@@ -40,7 +40,7 @@ public:
                size_t size, size_t _maxErr);
     AidelModel(lrmodel_type &lrmodel, const typename std::vector<key_t>::const_iterator &keys_begin,
                const typename std::vector<val_t>::const_iterator &vals_begin, 
-               size_t size, size_t _maxErr,std::vector<Vnode<V>*>);
+               size_t size, size_t _maxErr,std::vector<Vnode<val_t>*> version_lists);
     inline size_t get_capacity();
     inline void print_model();
     void print_keys();
@@ -76,7 +76,7 @@ private:
     lrmodel_type* model = nullptr;
     size_t maxErr = 64;
     size_t err = 0;
-    VersionedArray *model_array=nullptr;
+    VersionedArray<key_t,val_t> *model_array=nullptr;
     bool* valid_flag = nullptr;
     std::atomic<model_or_bin_t *> *mobs_lf = nullptr;
     const size_t capacity;

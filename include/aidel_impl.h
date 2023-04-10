@@ -203,7 +203,7 @@ template<class key_t, class val_t>
 int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result)
 {       
     int ts=((version_tracker.add_timestamp()))->ts;
-    range_query+=1;
+    
     size_t remaining = n;
     size_t model_pos = binary_search_branchless(&model_keys[0], model_keys.size(), key);
     if(model_pos >= aimodels.size())
@@ -242,7 +242,7 @@ inline result_t AIDEL<key_t, val_t>::update(
 template<class key_t, class val_t>
 inline result_t AIDEL<key_t, val_t>::remove(const key_t& key)
 {
-    return find_model(key)[0].remove(key,&version_tracker,range_query.load(std::memory_order_seq_cst)>0)
+    return find_model(key)[0].remove(key,&version_tracker)
      ? result_t::ok : result_t::failed;
     //return find_model(key)[0].con_insert(key, val);
 }
