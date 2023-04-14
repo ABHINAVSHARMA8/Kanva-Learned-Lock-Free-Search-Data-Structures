@@ -126,7 +126,7 @@ namespace aidel
     template <class key_t, class val_t>
     void AidelModel<key_t, val_t>::self_check_retrain()
     {
-        for (size_t i = 1; i < capacity; i++)
+        for (size_t i = 0; i < capacity; i++)
         {
             assert(keys[i] > keys[i - 1]);
         }
@@ -137,7 +137,7 @@ namespace aidel
             {
                 if (mob->isbin)
                 {
-                    mob->mob.lfll->self_check();
+                    mob->mob.lfll->self_check(i ? keys[i-1] : std::numeric_limits<key_t>::min());
                 }
                 else
                 {
@@ -267,6 +267,7 @@ namespace aidel
     template <class key_t, class val_t>
     bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos)
     {
+        if(bin_pos != 0) assert(keys[bin_pos-1] < key); // TODO: Remove
         model_or_bin_t *mob = mobs_lf[bin_pos];
     retry:
         if (mob == nullptr)
@@ -372,6 +373,7 @@ namespace aidel
         size_t pos = predict(key);
         pos = locate_in_levelbin(key, pos);
         //int bin_pos = key <= keys[pos] ? pos : (pos + 1);
+        //pos = key <= keys[pos] ? pos : (pos + 1);
         // TODO@Abhinav: When key doesn't match, shouldn't it start from the bin at that index
         
         while (remaining > 0 && pos <= capacity)
@@ -387,6 +389,8 @@ namespace aidel
                         break;
                 }
             }
+            pos++;
+            if(pos > capacity) break;
             if (mobs_lf[pos].load(std::memory_order_seq_cst))
             {
                 model_or_bin_t *mob;
@@ -401,7 +405,7 @@ namespace aidel
                     remaining = mob->mob.ai->scan(key, remaining, result, scan_bins);
                 }
             }
-            pos++;
+            //pos++;
         }
         return remaining;
     }

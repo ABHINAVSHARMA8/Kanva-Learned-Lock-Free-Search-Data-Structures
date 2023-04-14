@@ -49,7 +49,7 @@ public:
 
     int range_query(const K &key, const size_t n, std::vector<std::pair<K, V>> &result);
 
-    void self_check() {} // TODO: Implement
+    K self_check(const K &last_key);
 };
 
 template <typename K, typename V>
@@ -213,30 +213,36 @@ result_t Linked_List<K, V>::insert(K key, V value, bool is_update)
         }
     }
 }
+
+
+template <typename K, typename V>
+K Linked_List<K, V>::self_check(const K &last_key)
+{
+    K l_key = last_key;
+    ll_Node<K, V> *left_node = head;
+    while (left_node->next.load(std::memory_order_seq_cst))
+    {
+        left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
+        K curr_key = left_node->key;
+        if (!is_marked((uintptr_t)left_node) && (curr_key != std::numeric_limits<K>::max()))
+        {
+            l_key = curr_key;
+        }
+        left_node = (ll_Node<K, V> *)get_unmarked_ref((long)left_node);
+    }
+    return l_key;
+}
+
 template <typename K, typename V>
 int Linked_List<K, V>::range_query(const K &key, const size_t n, std::vector<std::pair<K, V>> &result)
 {
-    size_t remaining = 0;   
+    assert(n);
+    size_t remaining = n;   
     ll_Node<K, V> *left_node = head;
-    
     while (left_node->next.load(std::memory_order_seq_cst))
     {
-        if (!is_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst)))
-        {
-            while (true)
-            {
-                ll_Node<K, V> *curr_next = left_node->next.load(std::memory_order_seq_cst);
-                if (!left_node->next.compare_exchange_strong(curr_next, (ll_Node<K, V> *)set_freeze((long)curr_next)))
-                    continue;
-                break;
-            }
-        }
-        /*Todo: Need to add loop
-        Pseudocode
-        while(left_node->next.load(std::memory_order_seq_cst) && left_node->key<key) left_node = (ll_Node<K, V> *)get_unmarked_ref((long)left_node);
-        */
         left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
-        if (!is_marked((uintptr_t)left_node) && (left_node->key != std::numeric_limits<K>::max()))
+        if (!is_marked((uintptr_t)left_node) && (left_node->key != std::numeric_limits<K>::max()) && (left_node->key>key))
         {
             result.push_back({left_node->key, left_node->value});
             remaining--;
@@ -244,9 +250,9 @@ int Linked_List<K, V>::range_query(const K &key, const size_t n, std::vector<std
         }
         left_node = (ll_Node<K, V> *)get_unmarked_ref((long)left_node);
     }
-    //result.pop_back();
     
    return remaining;
 }
+
 
 #endif // UNTITLED_LF_LL_H

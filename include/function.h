@@ -32,10 +32,10 @@ typedef struct operation_item {
 
 // parameters
 struct config{
-	double read_ratio = 0;
-	double insert_ratio = 0;
-	double update_ratio = 1;//not working in FINEdex
-	double delete_ratio = 0;
+	double read_ratio = 0.6;
+	double insert_ratio = 0.2;
+	double update_ratio = 0;//not working in FINEdex
+	double delete_ratio = 0.2;
 	size_t item_num  = 2000000;
 	size_t exist_num = 100000;
 	size_t runtime = 10;

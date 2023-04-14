@@ -43,7 +43,7 @@ namespace aidel
         inline void print_model();
         void print_keys();
         void print_model_retrain();
-        void self_check() { self_check_retrain(); }
+        void self_check() { self_check_retrain();}
         void self_check_retrain();
         result_t update(const key_t &key, const val_t &val);
         bool remove(const key_t &key);
