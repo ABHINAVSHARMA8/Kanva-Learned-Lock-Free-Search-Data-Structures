@@ -231,7 +231,10 @@ int Linked_List<K, V>::range_query(const K &key, const size_t n, std::vector<std
                 break;
             }
         }
-        //
+        /*Todo: Need to add loop
+        Pseudocode
+        while(left_node->next.load(std::memory_order_seq_cst) && left_node->key<key) left_node = (ll_Node<K, V> *)get_unmarked_ref((long)left_node);
+        */
         left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
         if (!is_marked((uintptr_t)left_node) && (left_node->key != std::numeric_limits<K>::max()))
         {

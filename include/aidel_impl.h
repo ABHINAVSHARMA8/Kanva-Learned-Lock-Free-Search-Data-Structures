@@ -78,7 +78,7 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
     
     COUT_THIS("[aidle] get models -> "<< model_keys.size());
     assert(model_keys.size()==aimodels.size());
-
+    /*
     key_t min1 = model_keys.front();
     key_t max1 = model_keys.back();
     const unsigned numBins = 128; // each node will have 128 separate bins
@@ -86,7 +86,7 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
     cht::Builder<key_t> chtb(min1, max1, numBins, maxError, false,false);
     for (const auto& key2 : model_keys) chtb.AddKey(key2);
     cht = chtb.Finalize();
-
+    */
     
 
 }
@@ -149,7 +149,7 @@ void AIDEL<key_t, val_t>::append_model(lrmodel_type &model,
 
 template<class key_t, class val_t>
 typename AIDEL<key_t, val_t>::aidelmodel_type* AIDEL<key_t, val_t>::find_model(const key_t &key)
-{
+{   /*
     size_t model_key=key;
     cht::SearchBound bound = cht.GetSearchBound(model_key);
     size_t model_pos=-1;
@@ -159,12 +159,12 @@ typename AIDEL<key_t, val_t>::aidelmodel_type* AIDEL<key_t, val_t>::find_model(c
             if(model_keys[bound.begin+i]>=model_key) model_pos=bound.begin+i;
         }
     }
-    
+    */
     
     
     
    
-    //size_t model_pos = binary_search_branchless(&model_keys[0], model_keys.size(), key);
+    size_t model_pos = binary_search_branchless(&model_keys[0], model_keys.size(), key);
     //std::cout<<model_pos2<<" "<<model_pos<<std::endl;
 
   if(model_pos >= aimodels.size())

@@ -371,7 +371,7 @@ namespace aidel
         size_t remaining = n;
         size_t pos = predict(key);
         pos = locate_in_levelbin(key, pos);
-        int bin_pos = key <= keys[pos] ? pos : (pos + 1);
+        //int bin_pos = key <= keys[pos] ? pos : (pos + 1);
         // TODO@Abhinav: When key doesn't match, shouldn't it start from the bin at that index
         
         while (remaining > 0 && pos <= capacity)
