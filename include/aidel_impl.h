@@ -217,7 +217,7 @@ int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std:
     if(model_pos >= aimodels.size())
         model_pos = aimodels.size()-1;
     while(remaining>0 && model_pos < aimodels.size()){
-        remaining = aimodels[model_pos].scan(key, remaining, result);
+        remaining = aimodels[model_pos++].scan(key, remaining, result);
     }
     return remaining;
 }

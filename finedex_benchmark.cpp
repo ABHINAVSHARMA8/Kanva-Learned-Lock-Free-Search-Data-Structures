@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     aidel_type *ai;
     prepare(ai);
     run_benchmark(ai, Config.runtime);
-    //ai->self_check();
+    ai->self_check();
     if(ai!=nullptr) delete ai;
     
 e=clock();
@@ -56,7 +56,7 @@ void prepare(aidel_type *&ai){
     ai->train(exist_keys, exist_keys, 32);
     TIMER_END_S(0,time_s);
     printf("%8.1lf s : %.40s\n", time_s, "training");
-    //ai->self_check();
+    ai->self_check();
     COUT_THIS("check aidel: OK");
     
 }
@@ -137,7 +137,7 @@ void *run_fg(void *param) {
     ready_threads++;
     volatile result_t res = result_t::failed;
     val_type dummy_value = 1234;
-
+    std::vector<std::pair<key_type, val_type>> result;
     while (!running)
         ;
 	while (running) {
@@ -145,6 +145,15 @@ void *run_fg(void *param) {
         if (d <= Config.read_ratio) {                   // search
             key_type dummy_key = exist_keys[query_i % exist_keys.size()];
             res = ai->find(dummy_key, dummy_value);
+            result.clear();
+            int n = ai->scan(dummy_key, 1000, result);
+            //std::cout<<n<<" "<<result.size()<<std::endl;
+            assert(result[0].first>=dummy_key);
+            //std::cout<<__LINE__<<std::endl;
+            for(int i=1;i<result.size();i++){
+                assert(result[i].first>result[i-1].first);
+            }
+            
             query_i++;
             if (unlikely(query_i == exist_keys.size())) {
                 query_i = 0;

@@ -46,11 +46,16 @@ public:
     ll_Node<K, V> *find(K key, ll_Node<K, V> **);
 
     int remove(K key);
+
+    int scan(const K &key, const size_t n, std::vector<std::pair<K, V>> &result);
+
+    void self_check() {} // TODO: Implement
 };
 
 template <typename K, typename V>
 void Linked_List<K, V>::collect(std::vector<K> &keys, std::vector<V> &vals)
 {
+
     ll_Node<K, V> *left_node = head;
     int i = 0;
     while (left_node->next.load(std::memory_order_seq_cst))
@@ -207,6 +212,38 @@ result_t Linked_List<K, V>::insert(K key, V value, bool is_update)
             return result_t::ok;
         }
     }
+}
+template <typename K, typename V>
+int Linked_List<K, V>::scan(const K &key, const size_t n, std::vector<std::pair<K, V>> &result)
+{
+    size_t remaining = 0;   
+    ll_Node<K, V> *left_node = head;
+    
+    while (left_node->next.load(std::memory_order_seq_cst))
+    {
+        if (!is_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst)))
+        {
+            while (true)
+            {
+                ll_Node<K, V> *curr_next = left_node->next.load(std::memory_order_seq_cst);
+                if (!left_node->next.compare_exchange_strong(curr_next, (ll_Node<K, V> *)set_freeze((long)curr_next)))
+                    continue;
+                break;
+            }
+        }
+        //
+        left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
+        if (!is_marked((uintptr_t)left_node) && (left_node->key != std::numeric_limits<K>::max()))
+        {
+            result.push_back({left_node->key, left_node->value});
+            remaining--;
+            if(remaining == 0) break;
+        }
+        left_node = (ll_Node<K, V> *)get_unmarked_ref((long)left_node);
+    }
+    //result.pop_back();
+    
+   return remaining;
 }
 
 #endif // UNTITLED_LF_LL_H

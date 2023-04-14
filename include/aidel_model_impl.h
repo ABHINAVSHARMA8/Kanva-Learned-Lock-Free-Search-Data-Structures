@@ -34,15 +34,15 @@ namespace aidel
                                          const typename std::vector<val_t>::const_iterator &vals_begin,
                                          size_t size, size_t _maxErr) : maxErr(_maxErr), capacity(size)
     {
-        model=new lrmodel_type(lrmodel.get_weight0(), lrmodel.get_weight1());
+        model = new lrmodel_type(lrmodel.get_weight0(), lrmodel.get_weight1());
         keys = (key_t *)malloc(sizeof(key_t) * size);
         vals = (val_t *)malloc(sizeof(val_t) * size);
-        //valid_flag = (bool *)malloc(sizeof(bool) * size);
+        // valid_flag = (bool *)malloc(sizeof(bool) * size);
         for (int i = 0; i < size; i++)
         {
             keys[i] = *(keys_begin + i);
             vals[i] = *(vals_begin + i);
-            //valid_flag[i] = true;
+            // valid_flag[i] = true;
         }
         mobs_lf = (std::atomic<model_or_bin_t *> *)malloc(sizeof(std::atomic<model_or_bin_t *>) * (size + 1));
         for (int i = 0; i < size + 1; i++)
@@ -137,7 +137,7 @@ namespace aidel
             {
                 if (mob->isbin)
                 {
-                    mob->mob.lb->self_check();
+                    mob->mob.lfll->self_check();
                 }
                 else
                 {
@@ -238,8 +238,10 @@ namespace aidel
         if (mob->isbin)
         {
             res = mob->mob.lfll->insert(key, val, true);
-        } else {
-             res = mob->mob.ai->update(key, val);
+        }
+        else
+        {
+            res = mob->mob.ai->update(key, val);
         }
         assert(res != result_t::retrain);
         return res;
@@ -286,7 +288,7 @@ namespace aidel
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
                 mob->mob.lfll->collect(retrain_keys, retrain_vals);
-                 lrmodel_type model;
+                lrmodel_type model;
                 model.train(retrain_keys.begin(), retrain_keys.size());
                 size_t err = model.get_maxErr();
                 aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), err);
@@ -312,7 +314,7 @@ namespace aidel
         size_t pos = predict(key);
         pos = locate_in_levelbin(key, pos);
         if (key == keys[pos])
-        {   
+        {
             vals[pos] = -1;
             return true;
         }
@@ -360,6 +362,48 @@ namespace aidel
             return mob->mob.ai->remove(key);
         }
         return false;
+    }
+
+    template<class key_t, class val_t>
+    int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector< std::pair<key_t, val_t> > &result, bool scan_bins)
+    {
+        assert(key >= 0);
+        size_t remaining = n;
+        size_t pos = predict(key);
+        pos = locate_in_levelbin(key, pos);
+        int bin_pos = key <= keys[pos] ? pos : (pos + 1);
+        // TODO@Abhinav: When key doesn't match, shouldn't it start from the bin at that index
+        
+        while (remaining > 0 && pos <= capacity)
+        {
+            if (pos < capacity && keys[pos] >= key)
+            {
+                val_t value = vals[pos];
+                if (value != -1)
+                {
+                    result.push_back({keys[pos], value});
+                    remaining--;
+                    if (remaining <= 0)
+                        break;
+                }
+            }
+            if (mobs_lf[pos].load(std::memory_order_seq_cst))
+            {
+                model_or_bin_t *mob;
+                mob = mobs_lf[pos];
+                if (mob->isbin)
+                {
+                    if(scan_bins) 
+                        remaining = mob->mob.lfll->scan(key, remaining, result);
+                }
+                else
+                {
+                    remaining = mob->mob.ai->scan(key, remaining, result, scan_bins);
+                }
+            }
+            pos++;
+        }
+        return remaining;
     }
 } // namespace aidel
 
