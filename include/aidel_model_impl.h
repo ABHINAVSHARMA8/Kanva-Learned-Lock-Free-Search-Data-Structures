@@ -394,7 +394,7 @@ namespace aidel
                 if (mob->isbin)
                 {
                     if(scan_bins) 
-                        remaining = mob->mob.lfll->scan(key, remaining, result);
+                        remaining = mob->mob.lfll->range_query(key, remaining, result);
                 }
                 else
                 {

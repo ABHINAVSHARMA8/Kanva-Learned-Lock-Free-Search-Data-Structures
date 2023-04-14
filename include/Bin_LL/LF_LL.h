@@ -47,7 +47,7 @@ public:
 
     int remove(K key);
 
-    int scan(const K &key, const size_t n, std::vector<std::pair<K, V>> &result);
+    int range_query(const K &key, const size_t n, std::vector<std::pair<K, V>> &result);
 
     void self_check() {} // TODO: Implement
 };
@@ -214,7 +214,7 @@ result_t Linked_List<K, V>::insert(K key, V value, bool is_update)
     }
 }
 template <typename K, typename V>
-int Linked_List<K, V>::scan(const K &key, const size_t n, std::vector<std::pair<K, V>> &result)
+int Linked_List<K, V>::range_query(const K &key, const size_t n, std::vector<std::pair<K, V>> &result)
 {
     size_t remaining = 0;   
     ll_Node<K, V> *left_node = head;
