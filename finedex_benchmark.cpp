@@ -146,7 +146,7 @@ void *run_fg(void *param) {
             key_type dummy_key = exist_keys[query_i % exist_keys.size()];
             //res = ai->find(dummy_key, dummy_value);
             result.clear();
-            int n = ai->scan(dummy_key, 1000, result);
+            int n = ai->scan(dummy_key, 10000, result);
             //std::cout<<n<<" "<<result.size()<<std::endl;
             assert(result[0].first>=dummy_key);
             //std::cout<<__LINE__<<std::endl;

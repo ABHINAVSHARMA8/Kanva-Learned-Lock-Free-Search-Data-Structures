@@ -525,16 +525,24 @@ int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector
                 if(remaining<=0) break;
             }
         }
+        
+        pos++;
+        if(pos>capacity) break;
+        //std::cout<<(mobs_lf[pos+1].load(std::memory_order_seq_cst)==nullptr)<<std::endl;
         if(mobs_lf[pos].load(std::memory_order_seq_cst)){
+            //std::cout<<"Bin"<<std::endl;
             model_or_bin_t *mob;
             mob = mobs_lf[pos];
             if(mob->isbin){
                 remaining = mob->mob.lflb->range_query(key, remaining,ts,result,version_tracker);//change for start key,n
+                
             } else {
+                //std::cout<<"Bin Model"<<std::endl;
                 remaining = mob->mob.ai->scan(key, remaining, result,version_tracker,ts);
             }
         }
-        pos++;
+        
+        //pos++;
     }
     return remaining;
     
