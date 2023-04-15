@@ -489,6 +489,8 @@ int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector
             remaining--;
             if(remaining<=0) break;
         }
+        pos++;
+        if(pos>capacity) break;
         if(mobs_lf[pos].load(std::memory_order_seq_cst)){
             model_or_bin_t *mob;
             mob = mobs_lf[pos];
@@ -498,7 +500,7 @@ int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector
                 remaining = mob->mob.ai->scan(key, remaining, result,version_tracker,ts);
             }
         }
-        pos++;
+        //pos++;
     }
     return remaining;
     
