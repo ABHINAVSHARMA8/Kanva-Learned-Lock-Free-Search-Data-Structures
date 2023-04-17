@@ -126,7 +126,7 @@ namespace aidel
     template <class key_t, class val_t>
     void AidelModel<key_t, val_t>::self_check_retrain()
     {
-        for (size_t i = 1; i < capacity; i++)
+        for (size_t i = 0; i < capacity; i++)
         {
             assert(keys[i] > keys[i - 1]);
         }
