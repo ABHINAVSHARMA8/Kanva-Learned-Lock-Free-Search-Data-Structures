@@ -105,7 +105,29 @@ std::vector<Vnode<V>*> Linked_List<K,V>::collect(std::vector<K> *keys,std::vecto
     
     std::vector<Vnode<V>*> version_lists;
     ll_Node<K, V> *left_node = head;
-   while (left_node->next.load(std::memory_order_seq_cst))
+    if (!is_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst)))
+    {
+        while (true)
+        {
+            ll_Node<K, V> *curr_next = left_node->next.load(std::memory_order_seq_cst);
+            if (!left_node->next.compare_exchange_strong(curr_next, (ll_Node<K, V> *)set_freeze((long)curr_next)))
+                continue;
+            break;
+        }
+    }
+
+    if(!is_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst)))
+    {
+        while(true)
+        {
+            Vnode<V> *curr_vhead = left_node->vhead.load(std::memory_order_seq_cst);
+            if (!left_node->vhead.compare_exchange_strong(curr_vhead, (Vnode<V> *)set_freeze((long)curr_vhead)))
+                continue;
+            break;
+        }
+    }
+   left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
+   while (unset_mark((long)left_node->next.load(std::memory_order_seq_cst)))
     {
         if (!is_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst)))
         {
@@ -117,7 +139,17 @@ std::vector<Vnode<V>*> Linked_List<K,V>::collect(std::vector<K> *keys,std::vecto
                 break;
             }
         }
-        left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
+
+        if(!is_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst)))
+        {
+            while(true)
+            {
+                Vnode<V> *curr_vhead = left_node->vhead.load(std::memory_order_seq_cst);
+                if (!left_node->vhead.compare_exchange_strong(curr_vhead, (Vnode<V> *)set_freeze((long)curr_vhead)))
+                    continue;
+                break;
+            }
+        }
         Vnode<V> *left_node_vhead = (Vnode<V>*) get_unmarked_ref((uintptr_t)left_node -> vhead.load(std::memory_order_seq_cst));
         if(!(left_node_vhead -> value == -1)){
            
@@ -125,7 +157,8 @@ std::vector<Vnode<V>*> Linked_List<K,V>::collect(std::vector<K> *keys,std::vecto
             (*values).push_back(left_node_vhead->value);
             version_lists.push_back(left_node_vhead);
         }
-        
+        left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
+//        Vnode<V> *left_node_vhead = (Vnode<V>*) get_unmarked_ref((uintptr_t)left_node -> vhead.load(std::memory_order_seq_cst));
         
     }
     return version_lists;
