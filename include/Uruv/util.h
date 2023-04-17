@@ -11,12 +11,11 @@
 const int64_t MAX = 32;
 const int64_t MIN = 8;
 
-std::atomic<int64_t> phase_counter = 0;
+
 int NUM_THREADS;
-int HELPING_DELAY = 1;
-int MAX_FAILURE = 1000000000;
-std::vector<int64_t> worst_case_resp_time;
-thread_local int FAILURE = 0;
+
+
+
 thread_local int cnt = 0;
 thread_local int ttid;
 bool expt_sleep = false;
@@ -82,51 +81,24 @@ public:
 
 ll_Node<int64_t, int64_t>* dummy_node = new ll_Node<int64_t, int64_t>(-1, -1);
 
-template<typename K, typename V>
-class State{
-public:
-    int64_t phase;
-    K key;
-    V value;
-    Vnode<V>* vnode;
-    bool finished;
-    std::atomic<ll_Node<K,V>*> search_node;
-    State(int64_t __phase, K __key, V __value)
-    {
-        phase = __phase;
-        key = __key;
-        value = __value;
-        vnode = new Vnode<V>(value);
-        finished = false;
-        search_node.store(dummy_node, std::memory_order_seq_cst);
-    }
-};
-
-std::vector<State<int64_t ,int64_t>*> stateArray;
-
-class HelpRecord
+inline int64_t is_freeze(uintptr_t i)
 {
-public:
-    int curr_tid;
-    long lastPhase;
-    long nextCheck;
-    HelpRecord(int tid)
-    {
-        curr_tid = -1;
-        reset();
-    }
-    void reset()
-    {
-        curr_tid = (curr_tid + 1)% NUM_THREADS;
-        if(stateArray[curr_tid] == nullptr)
-            lastPhase = -1;
-        else
-            lastPhase = stateArray[curr_tid] -> phase;
-        nextCheck = HELPING_DELAY;
-    }
-};
-static thread_local HelpRecord* help_obj;
+    return (int64_t)(i & (uintptr_t)0x02);
+}
+inline uintptr_t set_freeze(uintptr_t i)
+{
+    return (i | (uintptr_t)0x02);
+}
 
+inline uintptr_t unset_freeze(uintptr_t i)
+{
+    return (i & ~(uintptr_t)0x02);
+}
+
+inline uintptr_t unset_freeze_mark(uintptr_t i)
+{
+    return (i & ~(uintptr_t)0x03);
+}
 
 int64_t is_marked(uintptr_t i)
 {
@@ -137,6 +109,7 @@ uintptr_t set_mark(uintptr_t i)
 {
     return (i | (uintptr_t)0x01);
 }
+
 
 uintptr_t unset_mark(uintptr_t i)
 {
@@ -168,6 +141,10 @@ long get_unmarked_ref(long w)
 {
     /* return unset_mark(w); */
     return w & ~0x1L;
+}
+
+long get_unfreezed_unmarked_ref(long w){
+    return w & ~0x3L;
 }
 
 //TrackerList version_tracker;
