@@ -8,8 +8,7 @@
 #include "lr_model_impl.h"
 #include "aidel_model.h"
 #include "aidel_model_impl.h"
-#include "cht/builder.h"
-#include "cht/cht.h"
+
 #include "piecewise_linear_model.h"
 
 namespace aidel {
@@ -62,7 +61,7 @@ private:
     int maxErr = 0;
     int learning_step = 10000;
     float learning_rate = 0.1;
-    cht::CompactHistTree<key_t> cht;
+    //cht::CompactHistTree<key_t> cht;
     
 
 };
