@@ -15,9 +15,9 @@ include_directories("/opt/intel/oneapi/mkl/2021.1.1/include")
 set(CMAKE_CXX_FLAGS "-g -msse -march=core-avx2")
 
 
-file(GLOB test_benchmark_SORUCES ""  "test_benchmark.cpp" )
+
 file(GLOB finedex_benchmark_SORUCES ""  "finedex_benchmark.cpp" )
 
-file(GLOB CHT_INCLUDE_H "include/cht/*.h")
-add_executable(finedex_benchmark  ${CHT_INCLUDE_H} ${finedex_benchmark_SORUCES} )
+
+add_executable(finedex_benchmark   ${finedex_benchmark_SORUCES} )
 target_link_libraries(finedex_benchmark pthread)
