@@ -14,6 +14,7 @@ typedef aidel::AIDEL<key_type, val_type> aidel_type;
 volatile bool running = false;
 std::atomic<size_t> ready_threads(0);
 
+
 struct alignas(CACHELINE_SIZE) ThreadParam {
     aidel_type *ai;
     uint64_t throughput;
@@ -24,6 +25,24 @@ void run_benchmark(aidel_type *ai, size_t sec);
 void *run_fg(void *param);
 void prepare(aidel_type *&ai);
 
+/*
+typedef record_manager<
+        reclaimer_debra<K>,
+        allocator_new<K>,
+        pool_none<K>,
+        ll_Node<K, V>>
+        ll_record_manager_t;
+    typedef record_manager<
+        reclaimer_debra<K>,
+        allocator_new<K>,
+        pool_none<K>,
+        Vnode<V>>
+        vnode_record_manager_t;
+
+        llRecMgr;
+        vNodeRecMgr;
+ */
+
 int main(int argc, char **argv) {
    clock_t s,e;
     s=clock(); 
@@ -33,7 +52,7 @@ int main(int argc, char **argv) {
     aidel_type *ai;
     prepare(ai);
     run_benchmark(ai, Config.runtime);
-    ai->self_check();
+    ai->self_check(0);
     if(ai!=nullptr) delete ai;
     
 e=clock();
@@ -56,7 +75,7 @@ void prepare(aidel_type *&ai){
     ai->train(exist_keys, exist_keys, 32);
     TIMER_END_S(0,time_s);
     printf("%8.1lf s : %.40s\n", time_s, "training");
-    ai->self_check();
+    ai->self_check(0);
     COUT_THIS("check aidel: OK");
     
 }
@@ -121,6 +140,11 @@ void *run_fg(void *param) {
     uint32_t thread_id = thread_param.thread_id;
     aidel_type *ai = thread_param.ai;
 
+    /*
+    llRecMgr->initThread(thread_id);
+    vNodeRecMgr->initThread(thread_id);
+    */
+
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> ratio_dis(0, 1);
@@ -140,6 +164,7 @@ void *run_fg(void *param) {
     std::vector<std::pair<key_type, val_type>> result;
     while (!running)
         ;
+#if 0
 	while (running) {
         double d = ratio_dis(gen);
         if (d <= Config.read_ratio) {                   // search
@@ -184,5 +209,6 @@ void *run_fg(void *param) {
         }
         thread_param.throughput++;
     }
+#endif
     pthread_exit(nullptr);
 }

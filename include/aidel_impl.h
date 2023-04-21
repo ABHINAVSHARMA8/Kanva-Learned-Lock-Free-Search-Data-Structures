@@ -181,10 +181,10 @@ void AIDEL<key_t, val_t>::print_models()
 }
 
 template<class key_t, class val_t>
-void AIDEL<key_t, val_t>::self_check()
+void AIDEL<key_t, val_t>::self_check(thread_id_t tid)
 {
     for(int i=0; i<model_keys.size(); i++){
-        aimodels[i].self_check();
+        aimodels[i].self_check(tid);
     }
     
 }

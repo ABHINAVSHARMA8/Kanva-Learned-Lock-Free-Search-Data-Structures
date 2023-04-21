@@ -41,35 +41,35 @@ public:
     AidelModel(lrmodel_type &lrmodel, const typename std::vector<key_t>::const_iterator &keys_begin,
                const typename std::vector<val_t>::const_iterator &vals_begin, 
                size_t size, size_t _maxErr,std::vector<Vnode<val_t>*> version_lists);
-    inline size_t get_capacity();
-    inline void print_model();
-    void print_keys();
-    void print_model_retrain();
-    void self_check();
+    inline size_t get_capacity(thread_id_t tid);
+    inline void print_model(thread_id_t tid);
+    void print_keys(thread_id_t tid);
+    void print_model_retrain(thread_id_t tid);
+    void self_check(thread_id_t tid);
     //void self_check_retrain();
     
     //bool find(const key_t &key, val_t &val);
    // bool con_find(const key_t &key, val_t &val);
     //result_t con_find_retrain(const key_t &key, val_t &val);
-    result_t update(const key_t &key, const val_t &val); //NOT IMPLEMENTED
+    result_t update(const key_t &key, const val_t &val, thread_id_t tid); //NOT IMPLEMENTED
     //inline bool con_insert(const key_t &key, const val_t &val);
     //result_t con_insert_retrain(const key_t &key, const val_t &val);
-    bool remove(const key_t &key,TrackerList *version_tracker);
-    bool find_retrain(const key_t &key, val_t &val);
-    int scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result,TrackerList *version_tracker,int ts);
-    bool insert_retrain(const key_t &key, const val_t &val,TrackerList *version_tracker);//-1 for fail
+    bool remove(const key_t &key,TrackerList *version_tracker, thread_id_t tid);
+    bool find_retrain(const key_t &key, val_t &val, thread_id_t tid);
+    int scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result,TrackerList *version_tracker,int ts, thread_id_t tid);
+    bool insert_retrain(const key_t &key, const val_t &val,TrackerList *version_tracker, thread_id_t tid);//-1 for fail
     
     //void resort(std::vector<key_t> &keys, std::vector<val_t> &vals);
 
 private:
-    inline size_t predict(const key_t &key);
-    inline size_t locate_in_levelbin(const key_t &key, const size_t pos);//binary search
+    inline size_t predict(const key_t &key, thread_id_t tid);
+    inline size_t locate_in_levelbin(const key_t &key, const size_t pos, thread_id_t tid);//binary search
     //inline size_t find_lower(const key_t &key, const size_t pos);
     //inline size_t linear_search(const key_t *arr, int n, key_t key);
     //inline size_t find_lower_avx(const int *arr, int n, int key);
     //inline size_t find_lower_avx(const int64_t *arr, int n, int64_t key);
-    bool insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos,TrackerList *version_tracker);
-    bool remove_model_or_bin(const key_t &key, const int bin_pos,TrackerList *version_tracker);
+    bool insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos,TrackerList *version_tracker, thread_id_t tid);
+    bool remove_model_or_bin(const key_t &key, const int bin_pos,TrackerList *version_tracker, thread_id_t tid);
 
 
 private:

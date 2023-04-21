@@ -38,7 +38,7 @@ public:
     void train_opt(const std::vector<key_t> &keys, const std::vector<val_t> &vals, size_t _maxErr);
     //void retrain(typename root_type::iterator it);
     void print_models();
-    void self_check();
+    void self_check(thread_id_t tid);
     
     
     inline result_t find(const key_t &key, val_t &val);

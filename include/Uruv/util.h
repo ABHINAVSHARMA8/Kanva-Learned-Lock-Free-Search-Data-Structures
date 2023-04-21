@@ -11,6 +11,7 @@
 const int64_t MAX = 32;
 const int64_t MIN = 8;
 
+typedef int thread_id_t;
 
 int NUM_THREADS;
 
@@ -44,6 +45,11 @@ public:
         nextv.store(n);
         ts = -1;
     }
+    void init(V val, Vnode<V>* n = nullptr) {
+        this -> value = val;
+        nextv.store(n);
+        ts = -1;
+    }
 };
 
 template<typename K, typename V>
@@ -53,6 +59,7 @@ public:
     std::atomic<Vnode<V>*> vhead;
     std::atomic<ll_Node<K,V>*> next;
     std::atomic<int64_t> del;
+    // TODO: Delete this
     ll_Node(K key, V value)
     {
         this -> key = key;
@@ -62,6 +69,7 @@ public:
         del = 0;
     }
 
+    /*
     ll_Node(K key, V value, ll_Node<K,V>* next)
     {
         this -> key = key;
@@ -75,6 +83,15 @@ public:
         this -> key = key;
         this -> vhead.store(vhead, std::memory_order_seq_cst);
         this -> next.store(next, std::memory_order_seq_cst);
+        del = 0;
+    }
+    */
+    ll_Node() {}
+    void init(K key, V value) {
+        this -> key = key;
+        Vnode<V> *temp = new Vnode(value);
+        vhead.store(temp, std::memory_order_seq_cst);
+        next.store(nullptr, std::memory_order_seq_cst);
         del = 0;
     }
 };

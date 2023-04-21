@@ -84,14 +84,14 @@ AidelModel<key_t, val_t>::AidelModel(lrmodel_type &lrmodel,
 }
 
 template<class key_t, class val_t>
-inline size_t AidelModel<key_t, val_t>::get_capacity()
+inline size_t AidelModel<key_t, val_t>::get_capacity(thread_id_t tid)
 {
     return capacity;
 }
 
 // =====================  print =====================
 template<class key_t, class val_t>
-inline void AidelModel<key_t, val_t>::print_model()
+inline void AidelModel<key_t, val_t>::print_model(thread_id_t tid)
 {
     std::cout<<" capacity:"<<capacity<<" -->";
     model->print_weights();
@@ -99,14 +99,14 @@ inline void AidelModel<key_t, val_t>::print_model()
 }
 
 template<class key_t, class val_t>
-void AidelModel<key_t, val_t>::print_keys()
+void AidelModel<key_t, val_t>::print_keys(thread_id_t tid)
 {
     if (mobs_lf[0])
         {
             if (mobs_lf[0]->isbin)
                 mobs_lf[0]->mob.lb->print(std::cout);
             else
-                mobs_lf[0]->mob.ai->print_keys();
+                mobs_lf[0]->mob.ai->print_keys(tid);
         }
 
         for (size_t i = 0; i < capacity; i++)
@@ -117,13 +117,13 @@ void AidelModel<key_t, val_t>::print_keys()
                 if (mobs_lf[i + 1]->isbin)
                     mobs_lf[i + 1]->mob.lb->print(std::cout);
                 else
-                    mobs_lf[i + 1]->mob.ai->print_keys();
+                    mobs_lf[i + 1]->mob.ai->print_keys(tid);
             }
         }
 }
 
 template<class key_t, class val_t>
-void AidelModel<key_t, val_t>::print_model_retrain()
+void AidelModel<key_t, val_t>::print_model_retrain(thread_id_t tid)
 {
     std::cout<<"[print aimodel] capacity:"<<capacity<<" -->";
     model->print_weights();
@@ -135,7 +135,7 @@ void AidelModel<key_t, val_t>::print_model_retrain()
             }
             else
             {
-                mobs_lf[0]->mob.ai->print_model_retrain();
+                mobs_lf[0]->mob.ai->print_model_retrain(tid);
             }
         }
     for(size_t i=0; i<capacity; i++){
@@ -148,7 +148,7 @@ void AidelModel<key_t, val_t>::print_model_retrain()
             }
             else
             {
-                mobs_lf[i + 1]->mob.ai->print_model_retrain();
+                mobs_lf[i + 1]->mob.ai->print_model_retrain(tid);
             }
         }
     }
@@ -157,7 +157,7 @@ void AidelModel<key_t, val_t>::print_model_retrain()
 
 
 template<class key_t, class val_t>
-void AidelModel<key_t, val_t>::self_check()
+void AidelModel<key_t, val_t>::self_check(thread_id_t tid)
 {
     for(size_t i=1; i<capacity; i++){
         //assert(keys[i]>keys[i-1]);
@@ -169,7 +169,7 @@ void AidelModel<key_t, val_t>::self_check()
             if(mob->isbin){
                 //mob->mob.lb->self_check();CHECK
             } else {
-                mob->mob.ai->self_check();
+                mob->mob.ai->self_check(tid);
             }
         }
     }
@@ -181,11 +181,11 @@ void AidelModel<key_t, val_t>::self_check()
 
 // ============================ search =====================
 template<class key_t, class val_t>
-bool AidelModel<key_t, val_t>::find_retrain(const key_t &key, val_t &val)
+bool AidelModel<key_t, val_t>::find_retrain(const key_t &key, val_t &val, thread_id_t tid)
 {
-    size_t pos = predict(key);
+    size_t pos = predict(key, tid);
 
-    pos = locate_in_levelbin(key, pos);
+    pos = locate_in_levelbin(key, pos, tid);
     //if(key == keys[pos]){
     if(key==model_array[pos]->key){
          
@@ -201,10 +201,10 @@ bool AidelModel<key_t, val_t>::find_retrain(const key_t &key, val_t &val)
             return false;
         if (mob->isbin){
             
-            return mob->mob.lflb->search(key,val);//CHECK
+            return mob->mob.lflb->search(key,val, tid);//CHECK
         }
         else
-            return mob->mob.ai->find_retrain(key, val);
+            return mob->mob.ai->find_retrain(key, val, tid);
 }
 
 /*template<class key_t, class val_t>
@@ -262,15 +262,15 @@ result_t AidelModel<key_t, val_t>::con_find_retrain(const key_t &key, val_t &val
 
 
 template<class key_t, class val_t>
-inline size_t AidelModel<key_t, val_t>::predict(const key_t &key) {
-    size_t index_pos = model->predict(key);
+inline size_t AidelModel<key_t, val_t>::predict(const key_t &key, thread_id_t tid) {
+    size_t index_pos = model->predict(key, tid);
     return index_pos < capacity? index_pos:capacity-1;
 }
 
 
 
 template<class key_t, class val_t>
-inline size_t AidelModel<key_t, val_t>::locate_in_levelbin(const key_t &key, const size_t pos)
+inline size_t AidelModel<key_t, val_t>::locate_in_levelbin(const key_t &key, const size_t pos, thread_id_t tid)
 {
     // predict
     //size_t index_pos = model->predict(key);
@@ -304,7 +304,7 @@ inline size_t AidelModel<key_t, val_t>::locate_in_levelbin(const key_t &key, con
 
 // ======================= update =========================
 template<class key_t, class val_t>
-result_t AidelModel<key_t, val_t>::update(const key_t &key, const val_t &val)
+result_t AidelModel<key_t, val_t>::update(const key_t &key, const val_t &val, thread_id_t tid)
 {
     /*size_t pos = predict(key);
    // pos = locate_in_levelbin(key, pos);
@@ -344,10 +344,10 @@ result_t AidelModel<key_t, val_t>::update(const key_t &key, const val_t &val)
 
 // =============================== insert =======================
 template<class key_t, class val_t>
-inline bool AidelModel<key_t, val_t>::insert_retrain(const key_t &key, const val_t &val,TrackerList *version_tracker)
+inline bool AidelModel<key_t, val_t>::insert_retrain(const key_t &key, const val_t &val,TrackerList *version_tracker, thread_id_t tid)
 {
-    size_t pos = predict(key);
-    pos = locate_in_levelbin(key, pos);
+    size_t pos = predict(key, tid);
+    pos = locate_in_levelbin(key, pos, tid);
     //std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
     if(key == model_array[pos]->key){
         if(model_array[pos]->getValue()!=-1){ //already inserted
@@ -387,7 +387,7 @@ result_t AidelModel<key_t, val_t>::con_insert_retrain(const key_t &key, const va
 }*/
 
 template<class key_t, class val_t>
-bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos,TrackerList *version_tracker)
+bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos,TrackerList *version_tracker, thread_id_t tid)
 {
     // insert bin or model
    
@@ -406,12 +406,13 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
         assert(mob != nullptr);
         if (mob->isbin)
         { // insert into bin
-            int res = mob->mob.lflb->insert(key, val,version_tracker);//CHECK return type
+            int res = mob->mob.lflb->insert(key, val,version_tracker, tid);//CHECK return type
             if (res==-2)
             {
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
-                std::vector<Vnode<val_t>*> version_lists=mob->mob.lflb->collect(&retrain_keys,&retrain_vals);
+                // TODO: Provide min threashold
+                std::vector<Vnode<val_t>*> version_lists=mob->mob.lflb->collect(&retrain_keys,&retrain_vals, -1, tid);
                 lrmodel_type model;
                
                 model.train(retrain_keys.begin(), retrain_vals.size());
@@ -427,7 +428,7 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
                 {
                     goto retry;
                 }
-                return ai->insert_retrain(key, val,version_tracker);
+                return ai->insert_retrain(key, val,version_tracker, tid);
                 
                 //return (res==1 || res==0);
             }
@@ -436,7 +437,7 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
         }
         else 
         { // insert into model
-            return mob->mob.ai->insert_retrain(key, val,version_tracker);
+            return mob->mob.ai->insert_retrain(key, val,version_tracker, tid);
         }
         return false;
 }
@@ -447,10 +448,10 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
 
 // ========================== remove =====================
 template<class key_t, class val_t>
-bool AidelModel<key_t, val_t>::remove(const key_t &key,TrackerList *version_tracker)
+bool AidelModel<key_t, val_t>::remove(const key_t &key,TrackerList *version_tracker, thread_id_t tid)
 {
-    size_t pos = predict(key);
-    pos = locate_in_levelbin(key, pos);
+    size_t pos = predict(key, tid);
+    pos = locate_in_levelbin(key, pos, tid);
     if(key ==model_array[pos]->key){
        
         if(model_array[pos]->getValue()!=-1){
@@ -464,7 +465,7 @@ bool AidelModel<key_t, val_t>::remove(const key_t &key,TrackerList *version_trac
 }
 
 template<class key_t, class val_t>
-bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int bin_pos,TrackerList *version_tracker)
+bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int bin_pos,TrackerList *version_tracker, thread_id_t tid)
 {   
    retry:
         model_or_bin_t *mob = mobs_lf[bin_pos];
@@ -473,7 +474,7 @@ bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int b
         if (mob->isbin)
         {
             int res;
-            res = mob->mob.lflb->remove(key,version_tracker);//CHECK remove
+            res = mob->mob.lflb->remove(key,version_tracker, tid);//CHECK remove
             /*if (res == -1)
                 return false;*/
             if (res == -2)
@@ -510,7 +511,7 @@ bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int b
 
 // ========================== scan ===================
 template<class key_t, class val_t>
-int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result,TrackerList *version_tracker,int ts)
+int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result,TrackerList *version_tracker,int ts, thread_id_t tid)
 {   
     
     size_t remaining = n;
