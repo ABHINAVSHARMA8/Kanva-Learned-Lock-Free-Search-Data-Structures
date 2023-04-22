@@ -11,6 +11,10 @@ public:
 	std::atomic<TrackerNode*> tail;
 	TrackerNode *sentinel_last;
 	
+	std::atomic<uint64_t> active_thread_cnt;
+	std::atomic<uint64_t> min_active_ts;
+
+
 	TrackerList(){
 		sentinel_last = new TrackerNode(INT64_MAX);
 		head = new TrackerNode(0, sentinel_last);
@@ -25,6 +29,23 @@ public:
 	
 	int64_t get_latest_timestamp(){
 		return tail.load(std::memory_order_seq_cst) -> ts;
+	}
+
+	inline void trackTS(uint64_t ts) {
+		//std::cout << "Active: " << min_active_ts << std::endl;
+		active_thread_cnt++;
+	}
+	inline void untrackTS(uint64_t ts) {
+		//active_thread_cnt--;
+		if(active_thread_cnt >= 10) {
+			min_active_ts++;
+			active_thread_cnt = 0;
+			//std::cout << "Reduced: " << min_active_ts << std::endl;
+		}
+	}
+	inline int64_t getMinVersion() {
+		return -1;
+		//return min_active_ts.load(std::memory_order_seq_cst);
 	}
 };
 

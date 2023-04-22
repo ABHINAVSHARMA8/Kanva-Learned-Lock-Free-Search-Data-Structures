@@ -33,9 +33,9 @@ typedef struct operation_item {
 // parameters
 struct config{
 	double read_ratio =0.95;
-	double insert_ratio = 0.03;
-	double update_ratio = 0;
-	double delete_ratio = 0.02;
+	double insert_ratio = 0.01;
+	double update_ratio = 0.03;
+	double delete_ratio = 0.01;
 	size_t item_num  = 20000;
 	size_t exist_num = 10000;
 	size_t runtime = 10;

@@ -207,6 +207,8 @@ int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std:
 {       
     int ts=((version_tracker.add_timestamp()))->ts;
     
+    //version_tracker.trackTS(ts);
+
     size_t remaining = n;
     size_t model_pos = binary_search_branchless(&model_keys[0], model_keys.size(), key);
     if(model_pos >= aimodels.size())
@@ -214,7 +216,7 @@ int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std:
     while(remaining>0 && model_pos < aimodels.size()){
         remaining = aimodels[model_pos++].scan(key, remaining, result,&version_tracker,ts, tid);//CHECK:shouldn't model_pos increase by 1
     }
-    //minVersion.load = 0;
+    //version_tracker.untrackTS(ts);
     return remaining;
     
     //TODO:Range Query

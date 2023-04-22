@@ -177,6 +177,7 @@ void *run_fg(void *param) {
                 insert_i = 0;
             }
         } else if (d <= Config.read_ratio+Config.insert_ratio+Config.update_ratio) {    // update
+            assert(0);
             key_type dummy_key = non_exist_keys[update_i % non_exist_keys.size()];
             res = ai->update(dummy_key, dummy_key, thread_id);
             update_i++;

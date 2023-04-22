@@ -13,7 +13,7 @@
 #include "common/recordmgr/record_manager.h"
 
 // without sentinel
-#define threshhold 100
+#define threshhold 10
 
 template <typename K, typename V>
 class Linked_List
@@ -58,16 +58,12 @@ public:
     }
     int64_t count();
 
-    //int insert(K Key, V value, TrackerList *version_tracker);
     int insert(K Key, V value, TrackerList *version_tracker, thread_id_t tid);
-    //int remove(K key, TrackerList *version_tracker);
     int remove(K key, TrackerList *version_tracker, thread_id_t tid);
-    //bool insert(K Key, V value, ll_Node<K, V> *new_node);
 
     //bool search(K key, V value);
     bool search(K key, V value, thread_id_t tid);
 
-    //std::vector<Vnode<V> *> collect(std::vector<K> *, std::vector<V> *);
     std::vector<Vnode<V> *> collect(std::vector<K> *, std::vector<V> *, int64_t tstamp_threshold, thread_id_t tid);
 
     int range_query(int64_t low, int64_t remaining, int64_t curr_ts, std::vector<std::pair<K, V>> &res, TrackerList *version_tracker, thread_id_t tid);
@@ -160,7 +156,6 @@ std::vector<Vnode<V> *> Linked_List<K, V>::collect(std::vector<K> *keys, std::ve
                                                     int64_t tstamp_threshold, thread_id_t tid)
 {
     auto guard = llRecMgr->getGuard(tid);
-    
     std::vector<Vnode<V> *> version_lists;
     ll_Node<K, V> *left_node = head;
     if (!is_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst)))
@@ -215,17 +210,20 @@ std::vector<Vnode<V> *> Linked_List<K, V>::collect(std::vector<K> *keys, std::ve
             (*keys).push_back(left_node->key);
             (*values).push_back(left_node_vhead->value);
             version_lists.push_back(left_node_vhead);
-            /*
+
             Vnode<V> *left_vnode = left_node_vhead, *curr_vnode = nullptr;
             while(unset_freeze((long)left_vnode->nextv.load(std::memory_order_seq_cst))) {
                 curr_vnode = (Vnode<V>*)unset_freeze((long)left_vnode->nextv.load(std::memory_order_seq_cst));
+                //std::cout << curr_vnode->ts << " " << tstamp_threshold << std::endl;
                 if(curr_vnode->ts <= tstamp_threshold) {
                     left_vnode->nextv = nullptr;
-                    llRecMgr->template retire(tid, curr_vnode);
+                    vnodeRecMgr->template retire(tid, curr_vnode);
+                    //std::cout << "Retiring\n";
                 }
                 left_vnode = curr_vnode;
-            }*/
+            }
         }
+        llRecMgr->template retire(tid, left_node);
         left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
         //        Vnode<V> *left_node_vhead = (Vnode<V>*) get_unmarked_ref((uintptr_t)left_node -> vhead.load(std::memory_order_seq_cst));
     }

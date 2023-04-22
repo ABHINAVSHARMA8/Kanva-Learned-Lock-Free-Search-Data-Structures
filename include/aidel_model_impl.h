@@ -392,7 +392,7 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
                 std::vector<key_t> retrain_keys;
                 std::vector<val_t> retrain_vals;
                 // TODO: Provide min threashold
-                std::vector<Vnode<val_t>*> version_lists=mob->mob.lflb->collect(&retrain_keys,&retrain_vals, -1, tid);
+                std::vector<Vnode<val_t>*> version_lists=mob->mob.lflb->collect(&retrain_keys,&retrain_vals, version_tracker->getMinVersion(), tid);
                 lrmodel_type model;
                
                 model.train(retrain_keys.begin(), retrain_vals.size());
