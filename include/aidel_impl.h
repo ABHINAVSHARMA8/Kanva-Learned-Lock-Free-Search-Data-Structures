@@ -11,19 +11,19 @@
 namespace aidel {
 
 template<class key_t, class val_t>
-inline AIDEL<key_t, val_t>::AIDEL()
-    : maxErr(64), learning_step(1000), learning_rate(0.1)
+inline AIDEL<key_t, val_t>::AIDEL(int num_threads)
+    : maxErr(64), learning_step(1000), learning_rate(0.1), llRecMgr(new ll_record_manager_t(num_threads)), vnodeRecMgr(new vnode_record_manager_t(num_threads))
 {
-    
+   
 }
-
+/*
 template<class key_t, class val_t>
-inline AIDEL<key_t, val_t>::AIDEL(int _maxErr, int _learning_step, float _learning_rate)
-    : maxErr(_maxErr), learning_step(_learning_step), learning_rate(_learning_rate)
+inline AIDEL<key_t, val_t>::AIDEL(int _maxErr, int _learning_step, float _learning_rate, ll_record_manager_t *__llRecMgr, vnode_record_manager_t *__vnodeRecMgr)
+    : maxErr(_maxErr), learning_step(_learning_step), learning_rate(_learning_rate), llRecMgr(__llRecMgr), vnodeRecMgr(__vnodeRecMgr)
 {
     
 }
-
+*/
 template<class key_t, class val_t>
 AIDEL<key_t, val_t>::~AIDEL(){
     
@@ -32,7 +32,7 @@ AIDEL<key_t, val_t>::~AIDEL(){
 // ====================== train models ========================
 template<class key_t, class val_t>
 void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys, 
-                                const std::vector<val_t> &vals, size_t _maxErr)
+                                const std::vector<val_t> &vals, size_t _maxErr, thread_id_t tid)
 {
     assert(keys.size() == vals.size());
     maxErr = _maxErr;
@@ -46,10 +46,10 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
         model.train(keys.begin()+start, end-start);
         size_t err = model.get_maxErr();
         if(err == maxErr) {
-            append_model(model, keys.begin()+start, vals.begin()+start, end-start, err);
+            append_model(model, keys.begin()+start, vals.begin()+start, end-start, err, tid);
         }else if(err < maxErr) {
             if(end>=keys.size()){
-                append_model(model, keys.begin()+start, vals.begin()+start, end-start, err);
+                append_model(model, keys.begin()+start, vals.begin()+start, end-start, err, tid);
                 break;
             }
             end += learning_step;
@@ -58,7 +58,7 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
             }
             continue;
         } else {
-            size_t offset = backward_train(keys.begin()+start, vals.begin()+start, end-start, int(learning_step*learning_rate));
+            size_t offset = backward_train(keys.begin()+start, vals.begin()+start, end-start, int(learning_step*learning_rate), tid);
 			end = start + offset;
         }
         start = end;
@@ -90,7 +90,7 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
 template<class key_t, class val_t>
 size_t AIDEL<key_t, val_t>::backward_train(const typename std::vector<key_t>::const_iterator &keys_begin, 
                                            const typename std::vector<val_t>::const_iterator &vals_begin,
-                                           uint32_t size, int step)
+                                           uint32_t size, int step, thread_id_t tid)
 {   
     if(size<=10){
         step = 1;
@@ -107,14 +107,14 @@ size_t AIDEL<key_t, val_t>::backward_train(const typename std::vector<key_t>::co
         model.train(keys_begin, end);
         size_t err = model.get_maxErr();
         if(err<=maxErr){
-            append_model(model, keys_begin, vals_begin, end, err);
+            append_model(model, keys_begin, vals_begin, end, err, tid);
             return end;
         }
         if(end>step)
         end -= step;
         else break;
     }
-    end = backward_train(keys_begin, vals_begin, end, int(step*learning_rate));
+    end = backward_train(keys_begin, vals_begin, end, int(step*learning_rate), tid);
 	return end;
 }
 
@@ -123,7 +123,7 @@ template<class key_t, class val_t>
 void AIDEL<key_t, val_t>::append_model(lrmodel_type &model, 
                                        const typename std::vector<key_t>::const_iterator &keys_begin, 
                                        const typename std::vector<val_t>::const_iterator &vals_begin, 
-                                       size_t size, int err)
+                                       size_t size, int err, thread_id_t tid)
 {
     key_t key = *(keys_begin+size-1);
     
@@ -136,14 +136,14 @@ void AIDEL<key_t, val_t>::append_model(lrmodel_type &model,
     }
      
     assert(err<=maxErr);
-    aidelmodel_type aimodel(model, keys_begin, vals_begin, size, maxErr);
+    aidelmodel_type aimodel(model, keys_begin, vals_begin, size, maxErr, llRecMgr, vnodeRecMgr);
 
     model_keys.push_back(key);
     aimodels.push_back(aimodel);
 }
 
 template<class key_t, class val_t>
-typename AIDEL<key_t, val_t>::aidelmodel_type* AIDEL<key_t, val_t>::find_model(const key_t &key)
+typename AIDEL<key_t, val_t>::aidelmodel_type* AIDEL<key_t, val_t>::find_model(const key_t &key, thread_id_t tid)
 {   //CHECK :add switch for biary search branchless
     /*
     size_t model_key=key;
@@ -168,7 +168,7 @@ typename AIDEL<key_t, val_t>::aidelmodel_type* AIDEL<key_t, val_t>::find_model(c
 
 // ===================== print data =====================
 template<class key_t, class val_t>
-void AIDEL<key_t, val_t>::print_models()
+void AIDEL<key_t, val_t>::print_models(thread_id_t tid)
 {
     
     for(int i=0; i<model_keys.size(); i++){
@@ -192,7 +192,7 @@ void AIDEL<key_t, val_t>::self_check(thread_id_t tid)
 
 // =================== search the data =======================
 template<class key_t, class val_t>
-inline result_t AIDEL<key_t, val_t>::find(const key_t &key, val_t &val)
+inline result_t AIDEL<key_t, val_t>::find(const key_t &key, val_t &val, thread_id_t tid)
 {   
     
 
@@ -203,7 +203,7 @@ inline result_t AIDEL<key_t, val_t>::find(const key_t &key, val_t &val)
 
 // =================  scan ====================
 template<class key_t, class val_t>
-int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result)
+int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result, thread_id_t tid)
 {       
     int ts=((version_tracker.add_timestamp()))->ts;
     
@@ -212,8 +212,9 @@ int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std:
     if(model_pos >= aimodels.size())
         model_pos = aimodels.size()-1;
     while(remaining>0 && model_pos < aimodels.size()){
-        remaining = aimodels[model_pos++].scan(key, remaining, result,&version_tracker,ts);//CHECK:shouldn't model_pos increase by 1
+        remaining = aimodels[model_pos++].scan(key, remaining, result,&version_tracker,ts, tid);//CHECK:shouldn't model_pos increase by 1
     }
+    //minVersion.load = 0;
     return remaining;
     
     //TODO:Range Query
@@ -224,9 +225,9 @@ int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std:
 // =================== insert the data =======================
 template<class key_t, class val_t>
 inline result_t AIDEL<key_t, val_t>::insert(
-        const key_t& key, const val_t& val)
+        const key_t& key, const val_t& val, thread_id_t tid)
 {
-    return find_model(key)[0].insert_retrain(key, val,&version_tracker) ? result_t::ok : result_t::failed;
+    return find_model(key, tid)[0].insert_retrain(key, val,&version_tracker, tid) ? result_t::ok : result_t::failed;
     //return find_model(key)[0].con_insert(key, val);
 }
 
@@ -234,18 +235,18 @@ inline result_t AIDEL<key_t, val_t>::insert(
 // ================ update =================
 template<class key_t, class val_t>
 inline result_t AIDEL<key_t, val_t>::update(
-        const key_t& key, const val_t& val)
+        const key_t& key, const val_t& val, thread_id_t tid)
 {   //Not used anywhere
-    return find_model(key)[0].update(key, val);
+    return find_model(key, tid)[0].update(key, val, tid);
     //return find_model(key)[0].con_insert(key, val);
 }
 
 
 // ==================== remove =====================
 template<class key_t, class val_t>
-inline result_t AIDEL<key_t, val_t>::remove(const key_t& key)
+inline result_t AIDEL<key_t, val_t>::remove(const key_t& key, thread_id_t tid)
 {
-    return find_model(key)[0].remove(key,&version_tracker)
+    return find_model(key, tid)[0].remove(key,&version_tracker, tid)
      ? result_t::ok : result_t::failed;
     //return find_model(key)[0].con_insert(key, val);
 }
@@ -253,7 +254,7 @@ inline result_t AIDEL<key_t, val_t>::remove(const key_t& key)
 // ========================== using OptimalLPR train the model ==========================
 template<class key_t, class val_t>
 void AIDEL<key_t, val_t>::train_opt(const std::vector<key_t> &keys, 
-                                    const std::vector<val_t> &vals, size_t _maxErr)
+                                    const std::vector<val_t> &vals, size_t _maxErr, thread_id_t tid)
 {
     using pair_type = typename std::pair<size_t, size_t>;
 
@@ -268,7 +269,7 @@ void AIDEL<key_t, val_t>::train_opt(const std::vector<key_t> &keys,
 }
 
 template<class key_t, class val_t>
-size_t AIDEL<key_t, val_t>::model_size(){
+size_t AIDEL<key_t, val_t>::model_size(thread_id_t tid){
     return segments.size();
 }
 

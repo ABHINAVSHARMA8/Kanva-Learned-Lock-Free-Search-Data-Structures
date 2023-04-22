@@ -25,24 +25,6 @@ void run_benchmark(aidel_type *ai, size_t sec);
 void *run_fg(void *param);
 void prepare(aidel_type *&ai);
 
-/*
-typedef record_manager<
-        reclaimer_debra<K>,
-        allocator_new<K>,
-        pool_none<K>,
-        ll_Node<K, V>>
-        ll_record_manager_t;
-    typedef record_manager<
-        reclaimer_debra<K>,
-        allocator_new<K>,
-        pool_none<K>,
-        Vnode<V>>
-        vnode_record_manager_t;
-
-        llRecMgr;
-        vNodeRecMgr;
- */
-
 int main(int argc, char **argv) {
    clock_t s,e;
     s=clock(); 
@@ -71,8 +53,8 @@ void prepare(aidel_type *&ai){
     TIMER_DECLARE(0);
     TIMER_BEGIN(0);
     size_t maxErr = 4;
-    ai = new aidel_type();
-    ai->train(exist_keys, exist_keys, 32);
+    ai = new aidel_type(Config.thread_num);
+    ai->train(exist_keys, exist_keys, 32, 0);
     TIMER_END_S(0,time_s);
     printf("%8.1lf s : %.40s\n", time_s, "training");
     ai->self_check(0);
@@ -95,6 +77,9 @@ void run_benchmark(aidel_type *ai, size_t sec) {
         thread_params[worker_i].ai = ai;
         thread_params[worker_i].thread_id = worker_i;
         thread_params[worker_i].throughput = 0;
+        ai->llRecMgr->initThread(worker_i);
+        ai->vnodeRecMgr->initThread(worker_i);
+
         int ret = pthread_create(&threads[worker_i], nullptr, run_fg,
                                 (void *)&thread_params[worker_i]);
         if (ret) {
@@ -140,9 +125,9 @@ void *run_fg(void *param) {
     uint32_t thread_id = thread_param.thread_id;
     aidel_type *ai = thread_param.ai;
 
-    /*
-    llRecMgr->initThread(thread_id);
-    vNodeRecMgr->initThread(thread_id);
+    /* 
+    ai->llRecMgr->initThread(thread_id);
+    ai->vnodeRecMgr->initThread(thread_id);
     */
 
     std::random_device rd;
@@ -164,14 +149,13 @@ void *run_fg(void *param) {
     std::vector<std::pair<key_type, val_type>> result;
     while (!running)
         ;
-#if 0
 	while (running) {
         double d = ratio_dis(gen);
         if (d <= Config.read_ratio) {                   // search
             key_type dummy_key = exist_keys[query_i % exist_keys.size()];
             //res = ai->find(dummy_key, dummy_value);
             result.clear();
-            int n = ai->scan(dummy_key, 10000, result);
+            int n = ai->scan(dummy_key, 10000, result, thread_id);
             //std::cout<<n<<" "<<result.size()<<std::endl;
             assert(result[0].first>=dummy_key);
             //std::cout<<__LINE__<<std::endl;
@@ -186,7 +170,7 @@ void *run_fg(void *param) {
         } else if (d <= Config.read_ratio+Config.insert_ratio){  // insert
             key_type dummy_key = non_exist_keys[insert_i % non_exist_keys.size()];
             //dummy_key=1;
-            res = ai->insert(dummy_key, dummy_key);
+            res = ai->insert(dummy_key, dummy_key, thread_id);
             //std::cout<<"Insert"<<std::endl;
             insert_i++;
             if (unlikely(insert_i == non_exist_keys.size())) {
@@ -194,14 +178,14 @@ void *run_fg(void *param) {
             }
         } else if (d <= Config.read_ratio+Config.insert_ratio+Config.update_ratio) {    // update
             key_type dummy_key = non_exist_keys[update_i % non_exist_keys.size()];
-            res = ai->update(dummy_key, dummy_key);
+            res = ai->update(dummy_key, dummy_key, thread_id);
             update_i++;
             if (unlikely(update_i == non_exist_keys.size())) {
                 update_i = 0;
             }
         }  else {                // remove
             key_type dummy_key = exist_keys[delete_i % exist_keys.size()];
-            res = ai->remove(dummy_key);
+            res = ai->remove(dummy_key, thread_id);
             delete_i++;
             if (unlikely(delete_i == exist_keys.size())) {
                 delete_i = 0;
@@ -209,6 +193,5 @@ void *run_fg(void *param) {
         }
         thread_param.throughput++;
     }
-#endif
     pthread_exit(nullptr);
 }

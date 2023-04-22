@@ -10,7 +10,7 @@ namespace aidel{
 
 
 template<class key_t, class val_t>
-AidelModel<key_t, val_t>::AidelModel(){
+AidelModel<key_t, val_t>::AidelModel(ll_record_manager_t *__llRecMgr, vnode_record_manager_t *__vnodeRecMgr): llRecMgr(__llRecMgr), vnodeRecMgr(__vnodeRecMgr) {
     model = nullptr;
     maxErr = 64;
     err = 0;
@@ -34,7 +34,8 @@ template<class key_t, class val_t>
 AidelModel<key_t, val_t>::AidelModel(lrmodel_type &lrmodel, 
                                      const typename std::vector<key_t>::const_iterator &keys_begin, 
                                      const typename std::vector<val_t>::const_iterator &vals_begin, 
-                                     size_t size, size_t _maxErr,std::vector<Vnode<val_t>*> version_lists) : maxErr(_maxErr), capacity(size)
+                                     size_t size, size_t _maxErr,std::vector<Vnode<val_t>*> version_lists,
+                                     ll_record_manager_t *__llRecMgr, vnode_record_manager_t *__vnodeRecMgr) : maxErr(_maxErr), capacity(size), llRecMgr(__llRecMgr), vnodeRecMgr(__vnodeRecMgr)
 {
     model=new lrmodel_type(lrmodel.get_weight0(), lrmodel.get_weight1());
     /*keys = (key_t *)malloc(sizeof(key_t)*size);
@@ -61,7 +62,8 @@ template<class key_t, class val_t>
 AidelModel<key_t, val_t>::AidelModel(lrmodel_type &lrmodel, 
                                      const typename std::vector<key_t>::const_iterator &keys_begin, 
                                      const typename std::vector<val_t>::const_iterator &vals_begin, 
-                                     size_t size, size_t _maxErr) : maxErr(_maxErr), capacity(size)
+                                     size_t size, size_t _maxErr,
+                                     ll_record_manager_t *__llRecMgr, vnode_record_manager_t *__vnodeRecMgr) : maxErr(_maxErr), capacity(size), llRecMgr(__llRecMgr), vnodeRecMgr(__vnodeRecMgr)
 {
     model=new lrmodel_type(lrmodel.get_weight0(), lrmodel.get_weight1());
     /*keys = (key_t *)malloc(sizeof(key_t)*size);
@@ -263,7 +265,7 @@ result_t AidelModel<key_t, val_t>::con_find_retrain(const key_t &key, val_t &val
 
 template<class key_t, class val_t>
 inline size_t AidelModel<key_t, val_t>::predict(const key_t &key, thread_id_t tid) {
-    size_t index_pos = model->predict(key, tid);
+    size_t index_pos = model->predict(key);
     return index_pos < capacity? index_pos:capacity-1;
 }
 
@@ -361,30 +363,8 @@ inline bool AidelModel<key_t, val_t>::insert_retrain(const key_t &key, const val
     int bin_pos = pos;
     bin_pos = key<model_array[bin_pos]->key?bin_pos:(bin_pos+1);
     //std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
-    return insert_model_or_bin(key, val, bin_pos,version_tracker);
+    return insert_model_or_bin(key, val, bin_pos,version_tracker, tid);
 }
-
-/*template<class key_t, class val_t>
-result_t AidelModel<key_t, val_t>::con_insert_retrain(const key_t &key, const val_t &val)
-{
-    size_t pos = predict(key);
-    //size_t pos = locate_in_levelbin(key, pos1);
-    //std::cout<<"insert "<<key<<" "<<keys[pos]<<std::endl;
-   // std::cout<<pos-pos1<<std::endl;
-   //std::cout<<key<<" "<<keys[pos]<<std::endl;
-    if(key == keys[pos]){
-        if(valid_flag[pos]){
-            return result_t::failed;
-        } else{
-            valid_flag[pos] = true;
-            vals[pos] = val;
-            return result_t::ok;
-        }
-    }
-    int bin_pos = pos;
-    bin_pos = key<keys[bin_pos]?bin_pos:(bin_pos+1);
-    return insert_model_or_bin(key, val, bin_pos);
-}*/
 
 template<class key_t, class val_t>
 bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos,TrackerList *version_tracker, thread_id_t tid)
@@ -397,7 +377,7 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
         if (mob == nullptr)
         {
             model_or_bin_t *new_mob = new model_or_bin_t();
-            new_mob->mob.lflb = new Linked_List<key_t, val_t>();
+            new_mob->mob.lflb = new Linked_List<key_t, val_t>(llRecMgr, vnodeRecMgr, tid);
             new_mob->isbin = true;
             if (!mobs_lf[bin_pos].compare_exchange_strong(mob, new_mob, std::memory_order_seq_cst, std::memory_order_seq_cst))
                 goto retry;
@@ -419,7 +399,7 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
                 //std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
                 size_t err = model.get_maxErr();
                 //std::cout<<"Error is "<<retrain_keys.size()<<" "<<retrain_vals.size()<<std::endl;
-                aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), err,version_lists);
+                aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), err,version_lists, llRecMgr, vnodeRecMgr);
 
                 model_or_bin_t *new_mob = new model_or_bin_t();
                 new_mob->mob.ai = ai;
@@ -461,7 +441,7 @@ bool AidelModel<key_t, val_t>::remove(const key_t &key,TrackerList *version_trac
         return false;
     }
     int bin_pos = key<model_array[pos]->key?pos:(pos+1);
-    return remove_model_or_bin(key, bin_pos,version_tracker);
+    return remove_model_or_bin(key, bin_pos,version_tracker, tid);
 }
 
 template<class key_t, class val_t>
@@ -501,7 +481,7 @@ bool AidelModel<key_t, val_t>::remove_model_or_bin(const key_t &key, const int b
         }
         else
         {
-            return mob->mob.ai->remove(key,version_tracker);
+            return mob->mob.ai->remove(key,version_tracker, tid);
         }
         return false;
     
@@ -515,8 +495,8 @@ int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector
 {   
     
     size_t remaining = n;
-    size_t pos = predict(key);
-    pos = locate_in_levelbin(key, pos);
+    size_t pos = predict(key, tid);
+    pos = locate_in_levelbin(key, pos, tid);
     while(remaining>0 && pos<=capacity) {
         if(pos<capacity && model_array[pos]->key>=key){
             val_t value = model_array[pos]->getVersionedValue(version_tracker,ts);
@@ -535,11 +515,11 @@ int AidelModel<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector
             model_or_bin_t *mob;
             mob = mobs_lf[pos];
             if(mob->isbin){
-                remaining = mob->mob.lflb->range_query(key, remaining,ts,result,version_tracker);//change for start key,n
+                remaining = mob->mob.lflb->range_query(key, remaining,ts,result,version_tracker, tid);//change for start key,n
                 
             } else {
                 //std::cout<<"Bin Model"<<std::endl;
-                remaining = mob->mob.ai->scan(key, remaining, result,version_tracker,ts);
+                remaining = mob->mob.ai->scan(key, remaining, result,version_tracker,ts, tid);
             }
         }
         
