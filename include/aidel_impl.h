@@ -205,9 +205,9 @@ inline result_t AIDEL<key_t, val_t>::find(const key_t &key, val_t &val, thread_i
 template<class key_t, class val_t>
 int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std::pair<key_t, val_t>> &result, thread_id_t tid)
 {       
-    int ts=((version_tracker.add_timestamp()))->ts;
-    
-    //version_tracker.trackTS(ts);
+    //int ts=((version_tracker.add_timestamp()))->ts;
+    TrackerNode* tracker_node = version_tracker.add_timestamp();
+    int ts = tracker_node->ts;
 
     size_t remaining = n;
     size_t model_pos = binary_search_branchless(&model_keys[0], model_keys.size(), key);
@@ -216,7 +216,7 @@ int AIDEL<key_t, val_t>::scan(const key_t &key, const size_t n, std::vector<std:
     while(remaining>0 && model_pos < aimodels.size()){
         remaining = aimodels[model_pos++].scan(key, remaining, result,&version_tracker,ts, tid);//CHECK:shouldn't model_pos increase by 1
     }
-    //version_tracker.untrackTS(ts);
+    tracker_node->finish = true;
     return remaining;
     
     //TODO:Range Query

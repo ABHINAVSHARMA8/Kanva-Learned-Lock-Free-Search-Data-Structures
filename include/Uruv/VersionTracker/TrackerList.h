@@ -30,23 +30,11 @@ public:
 	int64_t get_latest_timestamp(){
 		return tail.load(std::memory_order_seq_cst) -> ts;
 	}
-
-	inline void trackTS(uint64_t ts) {
-		//std::cout << "Active: " << min_active_ts << std::endl;
-		active_thread_cnt++;
-	}
-	inline void untrackTS(uint64_t ts) {
-		//active_thread_cnt--;
-		if(active_thread_cnt >= 10) {
-			min_active_ts++;
-			active_thread_cnt = 0;
-			//std::cout << "Reduced: " << min_active_ts << std::endl;
-		}
-	}
-	inline int64_t getMinVersion() {
-		return -1;
-		//return min_active_ts.load(std::memory_order_seq_cst);
-	}
+    
+    int64_t get_oldest_timestamp() {
+        TrackerNode* tracker_node = remove_head();
+		return tracker_node-> ts;
+    }
 };
 
 #include "TrackerList.h"
@@ -77,7 +65,8 @@ TrackerNode* TrackerList::remove_head(){
 	TrackerNode* curr_head = head.load(std::memory_order_seq_cst);
 	//this loop will end due to the invariant that sentinel_last
 	//will never "finish"!
-	while(curr_head -> finish){
+	//while(curr_head -> finish){
+	while(curr_head -> finish && curr_head->next != sentinel_last){
 		head.compare_exchange_strong(curr_head, curr_head -> next);
 		curr_head = head.load(std::memory_order_seq_cst);
 	}
