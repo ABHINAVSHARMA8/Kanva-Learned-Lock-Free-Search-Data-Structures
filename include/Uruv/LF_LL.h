@@ -151,12 +151,11 @@ std::vector<Vnode<V>*> Linked_List<K,V>::collect(std::vector<K> *keys,std::vecto
             }
         }
         Vnode<V> *left_node_vhead = (Vnode<V>*) get_unmarked_ref((uintptr_t)left_node -> vhead.load(std::memory_order_seq_cst));
-        if(!(left_node_vhead -> value == -1)){
            
-            (*keys).push_back(left_node->key);
-            (*values).push_back(left_node_vhead->value);
-            version_lists.push_back(left_node_vhead);
-        }
+        (*keys).push_back(left_node->key);
+        (*values).push_back(left_node_vhead->value);
+        version_lists.push_back(left_node_vhead);
+
         left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
 //        Vnode<V> *left_node_vhead = (Vnode<V>*) get_unmarked_ref((uintptr_t)left_node -> vhead.load(std::memory_order_seq_cst));
         
