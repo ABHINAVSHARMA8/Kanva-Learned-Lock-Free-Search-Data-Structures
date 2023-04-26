@@ -369,6 +369,7 @@ void Linked_List<K, V>::reclaimMem(int64_t tstamp_threshold, thread_id_t tid)
             }
             left_vnode = curr_vnode;
         }
+        left_node->vhead = nullptr;
         next_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
         llRecMgr->template retire(tid, left_node);
         left_node = next_node;
