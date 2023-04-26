@@ -346,9 +346,10 @@ void Linked_List<K, V>::reclaimMem(int64_t tstamp_threshold, thread_id_t tid)
 {
     auto guard = llRecMgr->getGuard(tid);
 
-    ll_Node<K, V> *left_node = head, *next_node = nullptr;
+    ll_Node<K, V> *left_node = head, *prev_node = nullptr;
     assert (is_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst)));
-    
+   
+    prev_node = left_node;
     left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
     while (unset_mark((long)left_node->next.load(std::memory_order_seq_cst)))
     {
@@ -370,11 +371,15 @@ void Linked_List<K, V>::reclaimMem(int64_t tstamp_threshold, thread_id_t tid)
             left_vnode = curr_vnode;
         }
         left_node->vhead = nullptr;
-        next_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
+        if(prev_node)
+            prev_node->next = nullptr;
         llRecMgr->template retire(tid, left_node);
-        left_node = next_node;
+        prev_node = left_node;
+        left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
         //        Vnode<V> *left_node_vhead = (Vnode<V>*) get_unmarked_ref((uintptr_t)left_node -> vhead.load(std::memory_order_seq_cst));
     }
+    llRecMgr->template retire(tid, head);
+    head = nullptr;
 }
 
 #endif // UNTITLED_LF_LL_H
