@@ -30,11 +30,10 @@ public:
         allocator_new<K>,
         pool_none<K>,
         Vnode<V>>
-        vnode_record_manager_t;    
-        
+        vnode_record_manager_t;
+
     ll_record_manager_t *llRecMgr = nullptr;
     vnode_record_manager_t *vnodeRecMgr = nullptr;
-
 
     ll_Node<K, V> *head;
     std::atomic<size_t> size = 0;
@@ -61,15 +60,17 @@ public:
     int insert(K Key, V value, TrackerList *version_tracker, thread_id_t tid);
     int remove(K key, TrackerList *version_tracker, thread_id_t tid);
 
-    //bool search(K key, V value);
+    // bool search(K key, V value);
     bool search(K key, V value, thread_id_t tid);
 
-    std::vector<Vnode<V> *> collect(std::vector<K> *, std::vector<V> *, int64_t tstamp_threshold, thread_id_t tid);
+    std::vector<Vnode<V> *> collect(std::vector<K> *, std::vector<V> *, thread_id_t tid);
 
     int range_query(int64_t low, int64_t remaining, int64_t curr_ts, std::vector<std::pair<K, V>> &res, TrackerList *version_tracker, thread_id_t tid);
 
-    //ll_Node<K, V> *find(K key, ll_Node<K, V> **);
+    // ll_Node<K, V> *find(K key, ll_Node<K, V> **);
     ll_Node<K, V> *find(K key, ll_Node<K, V> **, thread_id_t tid);
+
+    void reclaimMem(int64_t tstamp_threshold, thread_id_t tid);
 
     void init_ts(Vnode<V> *node, TrackerList *version_tracker, thread_id_t tid)
     {
@@ -87,17 +88,17 @@ public:
         init_ts(node->vhead, version_tracker, tid);
         return node->vhead.load(std::memory_order_seq_cst)->value;
     }
-    
+
     bool vCAS(ll_Node<K, V> *node, V old_value, V new_value, TrackerList *version_tracker, thread_id_t tid)
     {
-        auto guard = llRecMgr->getGuard(tid);  
+        auto guard = llRecMgr->getGuard(tid);
         Vnode<V> *head = (Vnode<V> *)unset_mark((uintptr_t)node->vhead.load(std::memory_order_seq_cst));
         init_ts(head, version_tracker, tid);
         if (head->value != old_value)
             return false;
         if (head->value == new_value)
             return true;
-        //Vnode<V> *new_node = new Vnode<V>(new_value, head);
+        // Vnode<V> *new_node = new Vnode<V>(new_value, head);
         Vnode<V> *new_node = vnodeRecMgr->template allocate<Vnode<V>>(tid);
         new_node->init(new_value, head);
         if (expt_sleep)
@@ -152,8 +153,7 @@ public:
 };
 
 template <typename K, typename V>
-std::vector<Vnode<V> *> Linked_List<K, V>::collect(std::vector<K> *keys, std::vector<V> *values,
-                                                    int64_t tstamp_threshold, thread_id_t tid)
+std::vector<Vnode<V> *> Linked_List<K, V>::collect(std::vector<K> *keys, std::vector<V> *values, thread_id_t tid)
 {
     auto guard = llRecMgr->getGuard(tid);
     std::vector<Vnode<V> *> version_lists;
@@ -204,26 +204,11 @@ std::vector<Vnode<V> *> Linked_List<K, V>::collect(std::vector<K> *keys, std::ve
             }
         }
         Vnode<V> *left_node_vhead = (Vnode<V> *)get_unmarked_ref((uintptr_t)left_node->vhead.load(std::memory_order_seq_cst));
-            
-        if (left_node_vhead->value != -1)
-        {
-            (*keys).push_back(left_node->key);
-            (*values).push_back(left_node_vhead->value);
-            version_lists.push_back(left_node_vhead);
 
-            Vnode<V> *left_vnode = left_node_vhead, *curr_vnode = nullptr;
-            while(unset_freeze((long)left_vnode->nextv.load(std::memory_order_seq_cst))) {
-                curr_vnode = (Vnode<V>*)unset_freeze((long)left_vnode->nextv.load(std::memory_order_seq_cst));
-                //std::cout << curr_vnode->ts << " " << tstamp_threshold << std::endl;
-                if(curr_vnode->ts <= tstamp_threshold) {
-                    left_vnode->nextv = nullptr;
-                    vnodeRecMgr->template retire(tid, curr_vnode);
-                    //std::cout << "Retiring\n";
-                }
-                left_vnode = curr_vnode;
-            }
-        }
-        llRecMgr->template retire(tid, left_node);
+        (*keys).push_back(left_node->key);
+        (*values).push_back(left_node_vhead->value);
+        version_lists.push_back(left_node_vhead);
+
         left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
         //        Vnode<V> *left_node_vhead = (Vnode<V>*) get_unmarked_ref((uintptr_t)left_node -> vhead.load(std::memory_order_seq_cst));
     }
@@ -334,7 +319,7 @@ int Linked_List<K, V>::insert(K key, V value, TrackerList *version_tracker, thre
         if (value == -1)
             return 0;
 
-        //ll_Node<K, V> *new_node = new ll_Node<K, V>(key, value);
+        // ll_Node<K, V> *new_node = new ll_Node<K, V>(key, value);
         ll_Node<K, V> *new_node = llRecMgr->template allocate<ll_Node<K, V>>(tid);
         new_node->init(key, value);
         new_node->next.store(right_node);
@@ -354,6 +339,41 @@ int Linked_List<K, V>::remove(K key, TrackerList *version_tracker, thread_id_t t
 {
     auto guard = llRecMgr->getGuard(tid);
     return insert(key, -1, version_tracker, tid); // CHANGE
+}
+
+template <typename K, typename V>
+void Linked_List<K, V>::reclaimMem(int64_t tstamp_threshold, thread_id_t tid)
+{
+    auto guard = llRecMgr->getGuard(tid);
+
+    ll_Node<K, V> *left_node = head, *next_node = nullptr;
+    assert (is_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst)));
+    
+    left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
+    while (unset_mark((long)left_node->next.load(std::memory_order_seq_cst)))
+    {
+        assert (is_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst)));
+        
+        Vnode<V> *left_node_vhead = (Vnode<V> *)get_unmarked_ref((uintptr_t)left_node->vhead.load(std::memory_order_seq_cst));
+
+        Vnode<V> *left_vnode = left_node_vhead, *curr_vnode = nullptr;
+        while (unset_freeze((long)left_vnode->nextv.load(std::memory_order_seq_cst)))
+        {
+            curr_vnode = (Vnode<V> *)unset_freeze((long)left_vnode->nextv.load(std::memory_order_seq_cst));
+            // std::cout << curr_vnode->ts << " " << tstamp_threshold << std::endl;
+            if (curr_vnode->ts <= tstamp_threshold)
+            {
+                left_vnode->nextv = nullptr;
+                vnodeRecMgr->template retire(tid, curr_vnode);
+                // std::cout << "Retiring\n";
+            }
+            left_vnode = curr_vnode;
+        }
+        next_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
+        llRecMgr->template retire(tid, left_node);
+        left_node = next_node;
+        //        Vnode<V> *left_node_vhead = (Vnode<V>*) get_unmarked_ref((uintptr_t)left_node -> vhead.load(std::memory_order_seq_cst));
+    }
 }
 
 #endif // UNTITLED_LF_LL_H
