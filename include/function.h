@@ -38,7 +38,7 @@ struct config{
 	double delete_ratio = 0.02;
 	size_t item_num  = 20000;
 	size_t exist_num = 10000;
-	size_t runtime = 10;
+	size_t runtime = 11;
 	size_t thread_num =8;
 	size_t benchmark = 5;  
 	size_t insert_factor = 1;
