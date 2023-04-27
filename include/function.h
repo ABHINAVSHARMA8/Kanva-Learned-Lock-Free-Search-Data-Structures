@@ -36,10 +36,10 @@ struct config{
 	double insert_ratio = 0.01;
 	double update_ratio = 0.03;
 	double delete_ratio = 0.01;
-	size_t item_num  = 20000;
-	size_t exist_num = 10000;
+	size_t item_num  = 200000000;
+	size_t exist_num = 100000000;
 	size_t runtime = 10;
-	size_t thread_num =8;
+	size_t thread_num =24;
 	size_t benchmark = 5;  
 	size_t insert_factor = 1;
 	double skewness = 0.05;

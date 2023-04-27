@@ -35,6 +35,8 @@ public:
     ll_record_manager_t *llRecMgr = nullptr;
     vnode_record_manager_t *vnodeRecMgr = nullptr;
 
+    bool isReclaimed=false;
+
     ll_Node<K, V> *head;
     std::atomic<size_t> size = 0;
     /*Linked_List()
@@ -63,7 +65,7 @@ public:
     // bool search(K key, V value);
     bool search(K key, V value, thread_id_t tid);
 
-    std::vector<Vnode<V> *> collect(std::vector<K> *, std::vector<V> *, thread_id_t tid);
+    bool collect(std::vector<K> *,std::vector<Vnode<V> *>*,  thread_id_t tid);
 
     int range_query(int64_t low, int64_t remaining, int64_t curr_ts, std::vector<std::pair<K, V>> &res, TrackerList *version_tracker, thread_id_t tid);
 
@@ -153,10 +155,11 @@ public:
 };
 
 template <typename K, typename V>
-std::vector<Vnode<V> *> Linked_List<K, V>::collect(std::vector<K> *keys, std::vector<V> *values, thread_id_t tid)
-{
+bool Linked_List<K, V>::collect(std::vector<K> *keys,std::vector<Vnode<V> *> *version_lists, thread_id_t tid)
+{   
+    if(isReclaimed) return false;
     auto guard = llRecMgr->getGuard(tid);
-    std::vector<Vnode<V> *> version_lists;
+    
     ll_Node<K, V> *left_node = head;
     if (!is_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst)))
     {
@@ -205,14 +208,17 @@ std::vector<Vnode<V> *> Linked_List<K, V>::collect(std::vector<K> *keys, std::ve
         }
         Vnode<V> *left_node_vhead = (Vnode<V> *)get_unmarked_ref((uintptr_t)left_node->vhead.load(std::memory_order_seq_cst));
 
-        (*keys).push_back(left_node->key);
-        (*values).push_back(left_node_vhead->value);
-        version_lists.push_back(left_node_vhead);
+        if(!isReclaimed){
+            (*keys).push_back(left_node->key);
+            //(*values).push_back(left_node_vhead->value);
+            (*version_lists).push_back(left_node_vhead);
+        }
+        else return false;
 
         left_node = (ll_Node<K, V> *)unset_freeze((uintptr_t)left_node->next.load(std::memory_order_seq_cst));
         //        Vnode<V> *left_node_vhead = (Vnode<V>*) get_unmarked_ref((uintptr_t)left_node -> vhead.load(std::memory_order_seq_cst));
     }
-    return version_lists;
+    return true;
 }
 
 template <typename K, typename V>
@@ -370,7 +376,7 @@ void Linked_List<K, V>::reclaimMem(int64_t tstamp_threshold, thread_id_t tid)
             }
             left_vnode = curr_vnode;
         }
-        left_node->vhead = nullptr;
+        //left_node->vhead = nullptr;
         if(prev_node)
             prev_node->next = nullptr;
         llRecMgr->template retire(tid, left_node);

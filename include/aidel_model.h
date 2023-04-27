@@ -52,10 +52,10 @@ public:
     inline AidelModel(ll_record_manager_t *__llRecMgr, vnode_record_manager_t *__vnodeRecMgr);
     ~AidelModel();
     AidelModel(lrmodel_type &lrmodel, const typename std::vector<key_t>::const_iterator &keys_begin,
-               const typename std::vector<val_t>::const_iterator &vals_begin, 
+               const typename std::vector<key_t>::const_iterator &vals_begin,
                size_t size, size_t _maxErr, ll_record_manager_t *__llRecMgr, vnode_record_manager_t *__vnodeRecMgr);
     AidelModel(lrmodel_type &lrmodel, const typename std::vector<key_t>::const_iterator &keys_begin,
-               const typename std::vector<val_t>::const_iterator &vals_begin, 
+               
                size_t size, size_t _maxErr,std::vector<Vnode<val_t>*> version_lists, ll_record_manager_t *__llRecMgr, vnode_record_manager_t *__vnodeRecMgr);
     inline size_t get_capacity(thread_id_t tid);
     inline void print_model(thread_id_t tid);
