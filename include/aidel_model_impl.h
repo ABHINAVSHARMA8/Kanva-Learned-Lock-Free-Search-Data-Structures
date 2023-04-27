@@ -33,7 +33,6 @@ AidelModel<key_t, val_t>::~AidelModel()
 template<class key_t, class val_t>
 AidelModel<key_t, val_t>::AidelModel(lrmodel_type &lrmodel, 
                                      const typename std::vector<key_t>::const_iterator &keys_begin, 
-                                     const typename std::vector<val_t>::const_iterator &vals_begin, 
                                      size_t size, size_t _maxErr,std::vector<Vnode<val_t>*> version_lists) : maxErr(_maxErr), capacity(size)
 {
     model=new lrmodel_type(lrmodel.get_weight0(), lrmodel.get_weight1());
@@ -390,10 +389,10 @@ template<class key_t, class val_t>
 bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos,TrackerList *version_tracker)
 {
     // insert bin or model
-   
-    model_or_bin_t *mob = mobs_lf[bin_pos];
-    
     retry:
+        model_or_bin_t *mob = mobs_lf[bin_pos];
+    
+    
         if (mob == nullptr)
         {
             model_or_bin_t *new_mob = new model_or_bin_t();
@@ -410,15 +409,16 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
             if (res==-2)
             {
                 std::vector<key_t> retrain_keys;
-                std::vector<val_t> retrain_vals;
-                std::vector<Vnode<val_t>*> version_lists=mob->mob.lflb->collect(&retrain_keys,&retrain_vals);
+                //std::vector<val_t> retrain_vals;
+                std::vector<Vnode<val_t>*> version_lists;
+                bool collectResult=mob->mob.lflb->collect(&retrain_keys,&version_lists);
                 lrmodel_type model;
                
-                model.train(retrain_keys.begin(), retrain_vals.size());
+                model.train(retrain_keys.begin(), retrain_keys.size());
                 //std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
                 size_t err = model.get_maxErr();
                 //std::cout<<"Error is "<<retrain_keys.size()<<" "<<retrain_vals.size()<<std::endl;
-                aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), err,version_lists);
+                aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_keys.size(), err,version_lists);
 
                 model_or_bin_t *new_mob = new model_or_bin_t();
                 new_mob->mob.ai = ai;

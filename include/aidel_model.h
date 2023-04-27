@@ -38,8 +38,7 @@ public:
     AidelModel(lrmodel_type &lrmodel, const typename std::vector<key_t>::const_iterator &keys_begin,
                const typename std::vector<val_t>::const_iterator &vals_begin, 
                size_t size, size_t _maxErr);
-    AidelModel(lrmodel_type &lrmodel, const typename std::vector<key_t>::const_iterator &keys_begin,
-               const typename std::vector<val_t>::const_iterator &vals_begin, 
+    AidelModel(lrmodel_type &lrmodel, const typename std::vector<key_t>::const_iterator &keys_begin, 
                size_t size, size_t _maxErr,std::vector<Vnode<val_t>*> version_lists);
     inline size_t get_capacity();
     inline void print_model();
