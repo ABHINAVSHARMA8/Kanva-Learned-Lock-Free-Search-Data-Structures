@@ -268,8 +268,9 @@ namespace aidel
     bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t &val, size_t bin_pos)
     {
         if(bin_pos != 0) assert(keys[bin_pos-1] < key); // TODO: Remove
-        model_or_bin_t *mob = mobs_lf[bin_pos];
-    retry:
+        retry:
+         model_or_bin_t *mob = mobs_lf[bin_pos];
+    
         if (mob == nullptr)
         {
             model_or_bin_t *new_mob = new model_or_bin_t();

@@ -37,9 +37,9 @@ struct config{
 	double update_ratio = 0;//not working in FINEdex
 	double delete_ratio = 0.2;
 	size_t item_num  = 2000000;
-	size_t exist_num = 100000;
+	size_t exist_num = 1000000;
 	size_t runtime = 10;
-	size_t thread_num = 1;
+	size_t thread_num = 24;
 	size_t benchmark = 0;  
 	size_t insert_factor = 1;
 	double skewness = 0.05;
