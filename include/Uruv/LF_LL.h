@@ -376,7 +376,7 @@ void Linked_List<K, V>::reclaimMem(int64_t tstamp_threshold, thread_id_t tid)
             }
             left_vnode = curr_vnode;
         }
-        //left_node->vhead = nullptr;
+        left_node->vhead = nullptr;
         if(prev_node)
             prev_node->next = nullptr;
         llRecMgr->template retire(tid, left_node);
