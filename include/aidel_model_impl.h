@@ -273,10 +273,10 @@ inline size_t AidelModel<key_t, val_t>::locate_in_levelbin(const key_t &key, con
 {
     // predict
     //size_t index_pos = model->predict(key);
-    size_t index_pos = pos;
-    size_t upbound = capacity-1;
+    int index_pos = pos;
+    int upbound = capacity-1;
     //index_pos = index_pos <= upbound? index_pos:upbound;
-
+    /*
     // search
     size_t begin, end, mid;
     if(key > model_array[index_pos]->key){
@@ -296,6 +296,31 @@ inline size_t AidelModel<key_t, val_t>::locate_in_levelbin(const key_t &key, con
             end = mid-1;
     }
     return begin;
+    */
+    int i = index_pos;int e=0;
+    if(i<0 || i>upbound) return -1;
+    while(i<=upbound && model_array[i]->key < key){
+        i+=(pow(2,e));
+        e++;
+    }
+    
+    if(i>upbound) i=upbound;
+    int right=i;
+    e=1;
+    if(i<0 || i>upbound) return -1;
+    while(i>0 && model_array[i]->key > key){
+        i-=(pow(2,e));
+        e++;
+    }
+
+    if(i<0) i=0;
+
+    int left=i;
+    //std::cout<<left<<" "<<right<<std::endl;
+    for(int j=left;j<=right;j++){
+        if(model_array[j]->key == key) return j;
+    }
+    return 0;
 }
 
 
@@ -416,9 +441,9 @@ bool AidelModel<key_t, val_t>::insert_model_or_bin(const key_t &key, const val_t
                
                 model.train(retrain_keys.begin(), retrain_keys.size());
                 //std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
-                size_t err = model.get_maxErr();
+                //size_t err = model.get_maxErr();
                 //std::cout<<"Error is "<<retrain_keys.size()<<" "<<retrain_vals.size()<<std::endl;
-                aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_keys.size(), err,version_lists);
+                aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_keys.size(), 0,version_lists);
 
                 model_or_bin_t *new_mob = new model_or_bin_t();
                 new_mob->mob.ai = ai;
