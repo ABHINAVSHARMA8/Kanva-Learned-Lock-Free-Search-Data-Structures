@@ -43,7 +43,7 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
         
         lrmodel_type model;
         model.train(keys.begin()+start, end-start);
-        
+        /*
         size_t err = model.get_maxErr();
        // std::cout<<__LINE__<<" "<<err<<std::endl;
         if(err == maxErr) {
@@ -67,7 +67,8 @@ void AIDEL<key_t, val_t>::train(const std::vector<key_t> &keys,
             //std::cout<<__LINE__<<std::endl;
 			end = start + offset;
         }
-        
+        */
+        append_model(model, keys.begin()+start, vals.begin()+start, end-start, 0);
         start = end;
         end += learning_step;
         if(end>=keys.size())
@@ -133,15 +134,17 @@ void AIDEL<key_t, val_t>::append_model(lrmodel_type &model,
     key_t key = *(keys_begin+size-1); //last element
     
     // set learning_step
+    /*
     int n = size/10;
     learning_step = 1;
     while(n!=0){
         n/=10;
         learning_step*=10;
     }
+    */
      
     assert(err<=maxErr);
-    aidelmodel_type aimodel(model, keys_begin, vals_begin, size, maxErr);
+    aidelmodel_type aimodel(model, keys_begin, vals_begin, size, 0);
 
     model_keys.push_back(key);
     aimodels.push_back(aimodel);

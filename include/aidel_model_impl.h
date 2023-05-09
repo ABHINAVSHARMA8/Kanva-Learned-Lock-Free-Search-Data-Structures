@@ -182,11 +182,12 @@ namespace aidel
     {
         // predict
         // size_t index_pos = model->predict(key);
-        size_t index_pos = pos;
-        size_t upbound = capacity - 1;
+        int index_pos = pos;
+        int upbound = capacity - 1;
         // index_pos = index_pos <= upbound? index_pos:upbound;
 
         // search
+        /*
         size_t begin, end, mid;
         if (key > keys[index_pos])
         {
@@ -211,6 +212,31 @@ namespace aidel
                 end = mid - 1;
         }
         return begin;
+        */
+        int i = index_pos;int e=0;
+    if(i<0 || i>upbound) return -1;
+    while(i<=upbound && keys[i] < key){
+        i+=(pow(2,e));
+        e++;
+    }
+    
+    if(i>upbound) i=upbound;
+    int right=i;
+    e=1;
+    if(i<0 || i>upbound) return -1;
+    while(i>0 && keys[i] > key){
+        i-=(pow(2,e));
+        e++;
+    }
+
+    if(i<0) i=0;
+
+    int left=i;
+    //std::cout<<left<<" "<<right<<std::endl;
+    for(int j=left;j<=right;j++){
+        if(keys[j] == key) return j;
+    }
+    return 0;
     }
 
     // ======================= update =========================
@@ -293,7 +319,7 @@ namespace aidel
                 lrmodel_type model;
                 model.train(retrain_keys.begin(), retrain_keys.size());
                 size_t err = model.get_maxErr();
-                aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), err);
+                aidelmodel_type *ai = new aidelmodel_type(model, retrain_keys.begin(), retrain_vals.begin(), retrain_keys.size(), 0);
                 model_or_bin_t *new_mob = new model_or_bin_t();
                 new_mob->mob.ai = ai;
                 new_mob->isbin = false;

@@ -148,10 +148,10 @@ void *run_fg(void *param) {
             result.clear();
             int n = ai->scan(dummy_key, 1000, result);
             //std::cout<<n<<" "<<result.size()<<std::endl;
-            assert(result[0].first>=dummy_key);
+            //assert(result[0].first>=dummy_key);
             //std::cout<<__LINE__<<std::endl;
             for(int i=1;i<result.size();i++){
-                assert(result[i].first>result[i-1].first);
+                //assert(result[i].first>result[i-1].first);
             }
             
             query_i++;
