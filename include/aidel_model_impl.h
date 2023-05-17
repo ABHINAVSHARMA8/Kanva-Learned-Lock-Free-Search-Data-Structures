@@ -324,8 +324,25 @@ inline size_t AidelModel<key_t, val_t>::locate_in_levelbin(const key_t &key, con
 
     int left=i;
     //std::cout<<left<<" "<<right<<std::endl;
+    /*
     for(int j=left;j<=right;j++){
         if(model_array[j]->key == key) return j;
+    }
+    */
+    while (left <= right) {
+        int m = left + (right - left) / 2;
+ 
+        // Check if x is present at mid
+        if (model_array[m]->key == key)
+            return m;
+ 
+        // If x greater, ignore left half
+        if (model_array[m]->key < key)
+            left = m + 1;
+ 
+        // If x is smaller, ignore right half
+        else
+            right = m - 1;
     }
     return 0;
 }
